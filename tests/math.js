@@ -149,16 +149,16 @@ describe('Basic math functions', () => {
         [3, 4, 1, 2, 3],
         [1, 1, 2, 1, 4]
       ], [
-          [1, 2, 0]
+          [1, 2, 0],
           [1, 0, 0],
-          [-1, 0, 0],
+          [-1, 0, 0]
       ], 1, 1)).to.eql([
         new Float32Array([0, -2, -2, 2, -1]),
         new Float32Array([2, 7, 11, 4, 6]),
         new Float32Array([6, 12, 7, 7, 9])
       ]);
 
-      /*expect(correlate([
+      expect(correlate([
         [1, 0, 2, 1],
         [3, 1, 2, 1],
         [3, 1, 1, 0]
@@ -167,7 +167,6 @@ describe('Basic math functions', () => {
         [1, 0, 1],
         [0, 0, 0]
       ],2,1)).to.eql([new Float32Array([0, 1]), new Float32Array([4, 5])]);
-      */
     });
 
 
