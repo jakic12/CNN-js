@@ -1,0 +1,37 @@
+{
+  "name": "cnn",
+  "version": "1.0.0",
+  "description": "javascript convolutional neural network library",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "chai": "^4.2.0",
+    "gpu.js": "^2.0.0-rc.21",
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jakic12/CNN-js.git"
+  },
+  "keywords": [
+    "convolutional",
+    "neural",
+    "network",
+    "ai",
+    "machine",
+    "learning"
+  ],
+  "author": "jakob",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jakic12/CNN-js/issues"
+  },
+  "homepage": "https://github.com/jakic12/CNN-js#readme"
+}
