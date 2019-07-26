@@ -70,7 +70,6 @@ const correlate = (a, f, s = 1, p = 0) => {
                 if (y1 >= 0 && y1 < this.constants.ySize && x1 >= 0 && x1 < this.constants.xSize)
                     sum += a1[y1][x1] * f1[y][x]
             }
-        
         return sum
     }).setConstants({ xSize: a[0].length, ySize: a.length, s, p, fY: f.length, fX: f[0].length })
     .setOutput([outX, outY])(a, f)
@@ -85,11 +84,12 @@ class debugGpu{
         if(this.outY){
             return new Array(this.outY).fill(0).map((_, y) => 
                 new Float32Array(this.outX).fill(0).map((__, x) => {
-                    let strF = this.f.toString().replace("this.thread.x", x).replace("this.thread.y", y)
+                    let strF = this.f.toString().replace(new RegExp("this.thread.x", 'g'), x).replace(new RegExp("this.thread.y", 'g'), y)
                     for (const key of Object.keys(this.constants)) {
-                        strF = strF.replace(`this.constants.${key}`,this.constants[key]);
+                        strF = strF.replace(new RegExp(`this.constants.${key}`, 'g'),this.constants[key]);
                     }
-                    return eval(`(${strF})(...${JSON.stringify([...arguments])})`);
+                    let test = eval(`(${strF})(...${JSON.stringify([...arguments])})`);
+                    return test
                 })
             )
         }else{
