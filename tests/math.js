@@ -161,6 +161,30 @@ describe('Basic math functions', () => {
             new Float32Array([4,3,2,2]),
             new Float32Array([4,2,3,1])
         ])
+
+        expect(doubleInverse([
+            [
+                [1,3,2,4],
+                [2,2,3,4],
+                [5,2,3,4]
+            ],[
+                [4,3,2,5],
+                [4,3,2,2],
+                [4,2,3,1]
+            ]
+        ])).to.eql([
+            [
+                new Float32Array([4,3,2,5]),
+                new Float32Array([4,3,2,2]),
+                new Float32Array([4,2,3,1])
+            ],[
+                new Float32Array([1,3,2,4]),
+                new Float32Array([2,2,3,4]),
+                new Float32Array([5,2,3,4])
+            ]
+        ])
+
+        expect(doubleInverse([1,2,3,4])).to.eql(new Float32Array([4,3,2,1]))
     })
 
     it(`convolute`, () => {

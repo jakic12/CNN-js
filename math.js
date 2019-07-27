@@ -75,16 +75,40 @@ const transpose = a => {
 }
 
 const doubleInverse = a => {
-    let outX = a[0].length
-    let outY = a.length
+    if(is3D(a)){
+        let outZ = a.length
+        let outY = a[0].length
+        let outX = a[0][0].length
 
-    return gpu.createKernel(function(a1) {
-      return a1[
-        this.constants.outY - this.thread.y - 1
-      ][this.constants.outX - this.thread.x - 1];
-    })
-      .setConstants({ outX, outY })
-      .setOutput([outX, outY])(a);
+        return gpu.createKernel(function(a1){
+            return a1
+                [this.thread.z]
+                [this.constants.outY - this.thread.y - 1]
+                [this.constants.outX - this.thread.x - 1]
+        }).setConstants({ outX, outY })
+          .setOutput([ outX, outY, outZ ])(a)
+
+    }else if(is2D(a)){
+        let outX = a[0].length
+        let outY = a.length
+
+        return gpu.createKernel(function(a1) {
+          return a1[
+            this.constants.outY - this.thread.y - 1
+          ][this.constants.outX - this.thread.x - 1];
+        })
+          .setConstants({ outX, outY })
+          .setOutput([outX, outY])(a);
+    }else if(is1D(a)){
+        let outX = a.length
+
+        return gpu.createKernel(function(a1){
+            return a1[this.constants.outX - this.thread.x - 1]
+        }).setConstants({ outX })
+          .setOutput([ outX ])(a)
+    }else{
+        throw new Error(`invalid array dimension`)
+    }
     
 }
 
