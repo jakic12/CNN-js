@@ -96,6 +96,59 @@ describe('Basic math functions', () => {
             new Float32Array([0,0,0,0]),
             new Float32Array([2,18,0,0])
         ])
+
+        expect(matrixMultiply([
+            [1,2,3,4,5,6,10],
+            [3,4,2,3,5,2,3]
+        ],[
+            [0,0,0,2,0,1,0],
+            [0,1,0,0,2,0,0]
+        ])).to.eql([
+            new Float32Array([0,0,0,8,0 ,6,0]),
+            new Float32Array([0,4,0,0,10,0,0])
+        ])
+
+        expect(matrixMultiply([
+            [
+                [1,2,3,4],
+                [4,3,2,1],
+                [2,1,0,2],
+            ],[
+                [1,2,3,4],
+                [0,3,1,2],
+                [5,2,1,0],
+            ],
+        ],[
+            [
+                [0,0,1,0],
+                [0,1,0,2],
+                [1,1,1,1],
+            ],[
+                [0,0,1,0],
+                [0,1,0,0],
+                [0,0,0,1],
+            ],
+        ])).to.eql([
+            [
+                new Float32Array([0,0,3,0]),
+                new Float32Array([0,3,0,2]),
+                new Float32Array([2,1,0,2]),
+            ],[
+                new Float32Array([0,0,3,0]),
+                new Float32Array([0,3,0,0]),
+                new Float32Array([0,0,0,0]),
+            ],
+        ])
+
+        expect(() => {
+            matrixMultiply([
+                [1,2,3],
+                [1,2,3]
+            ],[
+                [1,2],
+                [1,2]
+            ])
+        }).to.throw()
     })
 
     it(`double inverse`, () => {

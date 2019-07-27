@@ -13,6 +13,11 @@ const is1D = m => {
     return (!is2D(m) && !is3D(m) && m.length)? true : false 
 }
 
+/**
+ * Dot product between 2 2D matrices
+ * @param {Array<Array<Number>>} a 
+ * @param {Array<Array<Number>>} b 
+ */
 const matrixDot = (a, b) => {
     if(a[0].length != b.length)
         throw new Error(`invalid dimensions a -> x (${a[0].length}) should equal b -> y (${b.length})`)
@@ -27,12 +32,31 @@ const matrixDot = (a, b) => {
 }
 
 const matrixMultiply = (a,b) => {
-    if (a.length != b.length && ( !a[0][0] || a[0].length != b[0].length ))
-        throw new Error(`invalid dimensions, both arrays should have equal dimensions`)
+    if(is2D(a) && is2D(b)){
+        if (a.length != b.length || a[0].length != b[0].length )
+            throw new Error(`invalid dimensions, both arrays should have equal shape`)
 
-    return gpu.createKernel(function (a1, b1) {
-        return a1[this.thread.y][this.thread.x] * b1[this.thread.y][this.thread.x]
-    }).setOutput([a.length, a[0].length])(a, b);
+        return gpu.createKernel(function (a1, b1) {
+            return a1[this.thread.y][this.thread.x] * b1[this.thread.y][this.thread.x]
+        }).setOutput([a[0].length, a.length])(a, b);
+
+    }else if(is3D(a) && is3D(b)){
+        if (a.length != b.length || a[0].length != b[0].length || a[0][0].length != b[0][0].length )
+            throw new Error(`invalid dimensions, both arrays should have equal shape`)
+
+        return gpu.createKernel(function (a1, b1) {
+            return a1[this.thread.z][this.thread.y][this.thread.x] * b1[this.thread.z][this.thread.y][this.thread.x]
+        }).setOutput([a[0][0].length, a[0].length, a.length])(a, b);
+    }else if(is1D(a) && is1D(b)){
+        if (a.length != b.length)
+            throw new Error(`invalid dimensions, both arrays should have equal shape`)
+
+        return gpu.createKernel(function (a1, b1) {
+            return a1[this.thread.x] * b1[this.thread.x]
+        }).setOutput([a.length])(a, b);
+    }else{
+        throw new Error(`invalid array dimension`)
+    }
 }
 
 const transpose = a => {
