@@ -5,10 +5,34 @@ var {
   transpose,
   convolute,
   doubleInverse,
-  correlate
+  correlate,
+  is1D,
+  is2D,
+  is3D
 } = require("../math");
 
 describe('Basic math functions', () => {
+    it(`matrix dimension recognition`, () => {
+        let m1 = [1,2,3,4],
+        m2 = [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]],
+        m3 = [
+            [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]],
+            [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]],
+            [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]]
+        ]
+
+        expect(is1D(m1)).to.be.true
+        expect(is1D(m2)).to.be.false
+        expect(is1D(m3)).to.be.false
+
+        expect(is2D(m1)).to.be.false
+        expect(is2D(m2)).to.be.true
+        expect(is2D(m3)).to.be.false
+
+        expect(is3D(m1)).to.be.false
+        expect(is3D(m2)).to.be.false
+        expect(is3D(m3)).to.be.true
+    })
     describe(`matrix dot product`, () => {
         it(`throws error on invalid dimensions`, () => {
             expect(() => {

@@ -1,6 +1,18 @@
 var GPU = require('gpu.js').GPU;
 const gpu = new GPU(/*{ mode: 'dev' }*/);
 
+const is3D = m => {
+    return (m.length && m[0].length && m[0][0].length)? true : false 
+}
+
+const is2D = m => {
+    return (!is3D(m) && m.length && m[0].length)? true : false 
+}
+
+const is1D = m => {
+    return (!is2D(m) && !is3D(m) && m.length)? true : false 
+}
+
 const matrixDot = (a, b) => {
     if(a[0].length != b.length)
         throw new Error(`invalid dimensions a -> x (${a[0].length}) should equal b -> y (${b.length})`)
@@ -125,5 +137,8 @@ module.exports = {
   transpose,
   convolute,
   doubleInverse,
-  correlate
+  correlate,
+  is3D,
+  is2D,
+  is1D
 };
