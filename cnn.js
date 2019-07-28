@@ -1,8 +1,47 @@
 class CNN{
     constructor(shape){
         CNN.confirmShape(shape)
-        
         this.shape = shape
+
+        const randomWeightF = () => Math.random()*2
+
+        this.layers = new Array(shape.length).fill(0).map((_, i) => {
+            if(shape[i].type == LayerType.FC || shape[i].type == LayerType.FLATTEN){
+                return new Array(shape[i].l).fill(0)
+            }else{
+                return new Array(shape[i].d).fill(0).map(() => 
+                    new Array(shape[i].h).fill(0).map(() =>
+                        new Array(shape[i].w).fill(0)
+                    )
+                )
+            }
+        })
+
+        this.weights = new Array(shape.length).fill(0).map((_, i) => {
+            if(i != 0){
+                if(shape[i].type == LayerType.FC){
+                    if(shape[i-1].type == LayerType.FC || shape[i-1].type == LayerType.FLATTEN){
+                        return new Array(shape[i-1].l).fill(0).map(() =>
+                            new Array(shape[i].l).fill(0).map(randomWeightF)
+                        )
+                    }else{
+                        return new Array(shape[i-1].d).fill(0).map(() =>
+                            new Array(shape[i].l).fill(0).map(randomWeightF)
+                        )
+                    }
+                }else if(shape[i].type == LayerType.CONV){
+                    return new Array(shape[i].k).fill(0).map(() => 
+                        new Array(shape[i-1].d).fill(0).map(() =>
+                            new Array(shape[i].f).fill(0).map(() =>
+                                new Array(shape[i].f).fill(0).map(randomWeightF)
+                            )
+                        )
+                    )
+                }
+            }
+        })
+
+        console.log(this.weights)
     }
 
     static confirmShape(shape){
@@ -39,11 +78,10 @@ class CNN{
 
 const LayerType = {
     CONV: 0,
-    ACTIV: 1,
-    POOL: 2,
-    FLATTEN: 3,
-    FC:4,
-    INPUT:5
+    POOL: 1,
+    FC:2,
+    INPUT:3,
+    FLATTEN:4
 }
 
 const sigm = x => 1/(1+Math.exp(-x))
@@ -118,6 +156,19 @@ const Layer = {
         this.type = LayerType.FC
         this.l = l
         this.af = af
+    },
+    /**
+     * Convert a convolutional layerr to a fully connected layer
+     * @param {Number} w width of the input
+     * @param {Number} h height of the input
+     * @param {Number} d depth of the input
+     */
+    FLATTEN: function(w, h, d){
+        this.type = LayerType.FLATTEN
+        this.w = w
+        this.h = h
+        this.d = d
+        this.l = w * h * d
     }
 }
 
@@ -129,6 +180,7 @@ const NetworkArchitectures = {
         new Layer.CONV(10, 10, 16, 5, 16, 1, 0, ActivationFunction.TANH),
         new Layer.POOL(5, 5, 16, 2, 2, ActivationFunction.TANH),
         new Layer.CONV(1, 1, 120, 5, 120, 1, 0, ActivationFunction.TANH),
+        new Layer.FLATTEN(1, 1, 120),
         new Layer.FC(84, ActivationFunction.TANH),
         new Layer.FC(10, ActivationFunction.TANH)
     ]
