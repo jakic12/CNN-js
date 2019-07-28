@@ -6,9 +6,7 @@ var {
   convolute,
   doubleInverse,
   correlate,
-  is1D,
-  is2D,
-  is3D
+  getDimension
 } = require("../math");
 
 describe('Basic math functions', () => {
@@ -21,17 +19,10 @@ describe('Basic math functions', () => {
             [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]]
         ]
 
-        expect(is1D(m1)).to.be.true
-        expect(is1D(m2)).to.be.false
-        expect(is1D(m3)).to.be.false
-
-        expect(is2D(m1)).to.be.false
-        expect(is2D(m2)).to.be.true
-        expect(is2D(m3)).to.be.false
-
-        expect(is3D(m1)).to.be.false
-        expect(is3D(m2)).to.be.false
-        expect(is3D(m3)).to.be.true
+        expect(getDimension(m1)).to.eql(1)
+        expect(getDimension(m2)).to.eql(2)
+        expect(getDimension(m3)).to.eql(3)
+        expect(getDimension([m3])).to.eql(4)
     })
     describe(`matrix dot product`, () => {
         it(`throws error on invalid dimensions`, () => {
@@ -152,6 +143,24 @@ describe('Basic math functions', () => {
     })
 
     it(`double inverse`, () => {
+        expect(doubleInverse([[
+            [1,3,2,4],
+            [2,2,3,4],
+            [5,2,3,4]
+        ],[
+            [1,3,2,4],
+            [2,2,3,4],
+            [5,2,3,4]
+        ]])).to.eql([[
+            new Float32Array([4,3,2,5]),
+            new Float32Array([4,3,2,2]),
+            new Float32Array([4,2,3,1])
+        ],[
+            new Float32Array([4,3,2,5]),
+            new Float32Array([4,3,2,2]),
+            new Float32Array([4,2,3,1])
+        ]])
+
         expect(doubleInverse([
             [1,3,2,4],
             [2,2,3,4],
@@ -188,87 +197,148 @@ describe('Basic math functions', () => {
     })
 
     it(`convolute`, () => {
-        expect(convolute([
+        expect(convolute([[
             [1, 2, 3],
             [4, 5, 6],
             [7, 8, 9]
-        ], [
+        ]], [[[
             [-1, -2, -1],
             [0, 0, 0],
             [1, 2, 1]
-        ], 1, 1)).to.eql([
+        ]]], 1, 1)).to.eql([[
             new Float32Array([-13, -20, -17]),
             new Float32Array([-18, -24, -18]),
             new Float32Array([13, 20, 17])
-        ])
+        ]])
         
-        expect(convolute([
+        expect(convolute([[
             [1, 2, 3, 1, 2],
             [3, 4, 1, 2, 3],
             [1, 1, 2, 1, 4]
-        ], [
+        ]], [[[
             [0, 0, -1],
             [0, 0, 1],
             [0, 2, 1],
-        ], 1, 1)).to.eql([
+        ]]], 1, 1)).to.eql([[
             new Float32Array([0, -2, -2, 2, -1]),
             new Float32Array([2, 7, 11, 4, 6]),
             new Float32Array([6, 12, 7, 7, 9]),
-        ])
+        ]])
 
-        expect(convolute([
+        expect(convolute([[
             [1, 0, 2, 1],
             [3, 1, 2, 1],
             [3, 1, 1, 0]
-        ], [
+        ]], [[[
             [0, 0, 0],
             [1, 0, 1],
             [0, 1, 2]
-        ], 2, 1)).to.eql([
+        ]]], 2, 1)).to.eql([[
             new Float32Array([0, 1]),
             new Float32Array([4, 5])
-        ])
+        ]])
     })
 
     it(`correlate`, () => {
-      expect(correlate([
+      expect(correlate([[
         [1, 2, 3],
         [4, 5, 6],
         [7, 8, 9]
-      ],[
+      ]],[[[
         [1, 2, 1],
         [0, 0, 0],
         [-1, -2, -1]
-      ],1,1)).to.eql([
+      ]]],1,1)).to.eql([[
         new Float32Array([-13, -20, -17]),
         new Float32Array([-18, -24, -18]),
         new Float32Array([13, 20, 17])
-      ]);
+      ]]);
 
-      expect(correlate([
+      expect(correlate([[
         [1, 2, 3, 1, 2],
         [3, 4, 1, 2, 3],
         [1, 1, 2, 1, 4]
-      ], [
+      ]], [[[
           [1, 2, 0],
           [1, 0, 0],
           [-1, 0, 0]
-      ], 1, 1)).to.eql([
+      ]]], 1, 1)).to.eql([[
         new Float32Array([0, -2, -2, 2, -1]),
         new Float32Array([2, 7, 11, 4, 6]),
         new Float32Array([6, 12, 7, 7, 9])
-      ]);
+      ]]);
 
-      expect(correlate([
+      expect(correlate([[
         [1, 0, 2, 1],
         [3, 1, 2, 1],
         [3, 1, 1, 0]
-      ],[
+      ]],[[[
         [2, 1, 0],
         [1, 0, 1],
         [0, 0, 0]
-      ],2,1)).to.eql([new Float32Array([0, 1]), new Float32Array([4, 5])]);
-    });
+      ]]],2,1)).to.eql([[new Float32Array([0, 1]), new Float32Array([4, 5])]]);
 
+      expect(correlate([
+            [
+                [2,1,2,1,2],
+                [1,2,0,2,2],
+                [1,0,2,0,1],
+                [0,0,2,2,0],
+                [2,1,0,0,1]
+            ],[
+                [2,2,0,0,2],
+                [2,2,1,1,1],
+                [2,1,0,1,0],
+                [1,0,0,1,0],
+                [0,2,0,0,1]
+            ],[
+                [2,2,0,0,2],
+                [1,1,0,0,1],
+                [2,2,1,2,1],
+                [1,0,2,0,1],
+                [1,2,2,0,0]
+            ]
+        ],[
+            [
+                [
+                    [-1,1,0],
+                    [0,-1,0],
+                    [0,0,-1]
+                ],[
+                    [-1,-1,0],
+                    [0,0,1],
+                    [0,-1,-1]
+                ],[
+                    [-1,0,1],
+                    [1,1,-1],
+                    [1,1,-1]
+                ]
+            ],[
+                [
+                    [-1,-1,1],
+                    [1,1,1],
+                    [0,1,0]
+                ],[
+                    [-1,-1,1],
+                    [1,0,1],
+                    [-1,-1,0]
+                ],[
+                    [-1,0,-1],
+                    [-1,-1,0],
+                    [0,0,1]
+                ]
+            ]
+        ], 2, 1,[1, 0])).to.eql([
+            [
+                new Float32Array([-5,-2,1]),
+                new Float32Array([1,-6,2]),
+                new Float32Array([-1,7,-3])
+            ], [
+                new Float32Array([3,1,1]),
+                new Float32Array([-1,0,-8]),
+                new Float32Array([3,0,-2])
+            ]
+        ])
+    });
 
 })
