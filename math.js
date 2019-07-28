@@ -180,6 +180,36 @@ const correlate = (a, f, s = 1, p = 0, b = null) => {
     }
 }
 
+/**
+ * Reduces x and y dimensions of an array by max pooling
+ * @param {Array<Array<Array<Number>>>} a the input array
+ * @param {Number} f filter size
+ * @param {Number} s stride
+ */
+const maxPool = (a, f, s) => {
+    if(getDimension(a) == 3){
+        const outZ = a.length
+        const outY = parseInt(( a[0].length - f)/s + 1)
+        const outX = parseInt(( a[0][0].length - f)/s + 1)
+
+        return gpu.createKernel(function(a1){
+            let max = 0; 
+            for (let y = 0; y < this.constants.f; y++)
+                    for (let x = 0; x < this.constants.f; x++){
+                        let y1 = y + this.thread.y * this.constants.s
+                        let x1 = x + this.thread.x * this.constants.s
+
+                        if(a1[this.thread.z][y1][x1] > max)
+                            max = a1[this.thread.z][y1][x1]
+                    }
+            return max
+        }).setConstants({ f,s })
+          .setOutput([outX, outY, outZ])(a)
+    }else{
+        throw new Error(`invalid array dimension (${getDimension(a)})`)
+    }
+}
+
 class debugGpu{
     constructor(f){
         this.f = f;
@@ -260,5 +290,6 @@ module.exports = {
   convolute,
   doubleInverse,
   correlate,
-  getDimension
+  getDimension,
+  maxPool
 };

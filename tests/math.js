@@ -6,7 +6,8 @@ var {
   convolute,
   doubleInverse,
   correlate,
-  getDimension
+  getDimension,
+  maxPool
 } = require("../math");
 
 describe('Basic math functions', () => {
@@ -340,5 +341,17 @@ describe('Basic math functions', () => {
             ]
         ])
     });
+
+    it(`maxPooling`, () => {
+        expect(maxPool([[
+            [1,1,2,4],
+            [5,6,7,8],
+            [3,2,1,0],
+            [1,2,3,4]
+        ]], 2, 2)).to.eql([[
+            new Float32Array([6,8]),
+            new Float32Array([3,4])
+        ]])
+    })
 
 })
