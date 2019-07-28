@@ -210,6 +210,8 @@ const maxPool = (a, f, s) => {
     }
 }
 
+const flattenDeep = arr1 => arr1.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), [])
+
 class debugGpu{
     constructor(f){
         this.f = f;
@@ -291,5 +293,6 @@ module.exports = {
   doubleInverse,
   correlate,
   getDimension,
-  maxPool
+  maxPool,
+  flattenDeep
 };

@@ -7,7 +7,8 @@ var {
   doubleInverse,
   correlate,
   getDimension,
-  maxPool
+  maxPool,
+  flattenDeep
 } = require("../math");
 
 describe('Basic math functions', () => {
@@ -352,6 +353,10 @@ describe('Basic math functions', () => {
             new Float32Array([6,8]),
             new Float32Array([3,4])
         ]])
+    })
+
+    it(`flattenDeep`, () =>{
+        expect(flattenDeep([1,2,3,[1,2,3,4, [2,3,4]]])).to.eql([1, 2, 3, 1, 2, 3, 4, 2, 3, 4])
     })
 
 })
