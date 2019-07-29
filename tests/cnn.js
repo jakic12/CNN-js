@@ -37,8 +37,9 @@ describe('Convolutional neural network', () => {
         }).to.throw()
     })
 
-    it(`test forward propagation`, () => {
+    it(`propagation`, () => {
         let cnn = new CNN(NetworkArchitectures.LeNet5)
+
         let input = [new Array(32).fill(0).map((_, i) =>
             new Array(32).fill(0).map((_, j) => {
                 if(i < 28 && j < 28){
@@ -49,6 +50,6 @@ describe('Convolutional neural network', () => {
             })
         )]
         let out = cnn.forwardPropagate(input)
-        console.log(out)
+        expect(() => { cnn.backpropagate([1]) }).to.throw()
     })
 })

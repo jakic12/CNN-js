@@ -20,6 +20,8 @@ class CNN{
         const randomWeightF = () => Math.random()*-2
         const randomBiasF = () => Math.random()*-1
 
+        this.learningRate = 0.01
+
         this.layers = new Array(shape.length).fill(0).map((_, i) => {
             if(shape[i].type == LayerType.FC || shape[i].type == LayerType.FLATTEN){
                 return new Array(shape[i].l).fill(0)
@@ -31,6 +33,8 @@ class CNN{
                 )
             }
         })
+
+        this.dlayers = []
 
         this.weights = new Array(shape.length).fill(0).map((_, i) => {
             if(i != 0){
@@ -116,6 +120,29 @@ class CNN{
         }
 
         return this.layers[this.layers.length - 1]
+    }
+
+    /**
+     * 
+     * @param {Array} exp expected output
+     */
+    backpropagate(exp){
+        if(exp.length != this.shape[this.shape.length - 1].l)
+            throw new Error(`expected array length (${exp.length}) doesn't equal last layer length (${this.shape[this.shape.length - 1].l})`)
+
+        for(let i = this.shape.length-1; i > 0; i--){
+            if(this.shape[i].type == LayerType.FC){
+                if(i == this.shape.length-1){
+                    this.dlayers[i] = this.layers[i].map((v,j) => v - exp[j])
+                }else{
+                    this.dlayers[i] = matrixDot([this.dlayers[i+1]], transpose(this.weights[i+1]))[0]
+                }
+                //TODO backpropagate for bias
+            }
+            //TODO backpropagation for non FC layers
+        }
+        //TODO update weights
+        //TODO error calculation
     }
 
     static confirmShape(shape){
