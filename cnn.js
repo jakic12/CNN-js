@@ -1,9 +1,24 @@
+var {
+    matrixMultiply,
+    matrixDot,
+    transpose,
+    convolute,
+    doubleInverse,
+    correlate,
+    getDimension,
+    maxPool,
+    flattenDeep,
+    matrixAdd,
+    deepMap
+  } = require("./math");
+
 class CNN{
     constructor(shape){
         CNN.confirmShape(shape)
         this.shape = shape
 
-        const randomWeightF = () => Math.random()*2
+        const randomWeightF = () => Math.random()*-2
+        const randomBiasF = () => Math.random()*-1
 
         this.layers = new Array(shape.length).fill(0).map((_, i) => {
             if(shape[i].type == LayerType.FC || shape[i].type == LayerType.FLATTEN){
@@ -41,7 +56,66 @@ class CNN{
             }
         })
 
-        console.log(this.weights)
+        this.biases = new Array(shape.length).fill(0).map((_, i) => {
+            if(i != 0){
+                if(shape[i].type == LayerType.FC){
+                    return new Array(this.shape[i].l).fill(0).map(randomBiasF)
+                }else{
+                    return new Array(this.shape[i].d).fill(0).map(randomBiasF)
+                }
+            }
+        })
+    }
+
+    /**
+     * Pass the data trough all layers and return the last one
+     * @param {Array<Array<Array<Number>>>} data 
+     */
+    forwardPropagate(data){
+        if(data.length != this.shape[0].d)
+            throw new Error(`data depth (${data.length}) doesnt match required depth (${this.shape[0].d})`)
+
+        if(data[0].length != this.shape[0].h)
+            throw new Error(`data height (${data[0].length}) doesnt match required height (${this.shape[0].h})`)
+
+        if(data[0][0].length != this.shape[0].w)
+            throw new Error(`data width (${data[0][0].length}) doesnt match required width (${this.shape[0].w})`)
+
+        for(let i = 1; i < this.shape.length; i++){
+            switch(this.shape[i].type){
+                case LayerType.CONV:
+                    this.layers[i] = convolute(this.layers[i-1], this.weights[i], this.shape[i].s, this.shape[i].p, this.biases[i]);
+                    break;
+                case LayerType.POOL:
+                    this.layers[i] = maxPool(this.layers[i-1], this.shape[i].f, this.shape[i].s);
+                    break;
+                case LayerType.FLATTEN:
+                    this.layers[i] = flattenDeep(this.layers[i-1]);
+                    break;
+                case LayerType.FC:
+                    this.layers[i] = matrixAdd(matrixDot([this.layers[i-1]], this.weights[i])[0], this.biases[i]);
+                    break;
+            }
+
+            deepMap(this.layers[i], (x,i,v) => {
+                if(isNaN(x))
+                    throw new Error(`[${i}] output NaN before activation`)
+                return x
+            })
+
+            if(this.shape[i].af)
+                this.layers[i] = deepMap(this.layers[i], (x) => this.shape[i].af(x))
+            
+            deepMap(this.layers[i], (x) => {
+                if(isNaN(x))
+                    throw new Error(`[${i}] output NaN after activation`)
+                return x
+            })
+
+            console.log(i)
+        }
+
+        return this.layers[this.layers.length - 1]
     }
 
     static confirmShape(shape){
