@@ -1,5 +1,5 @@
-var GPU = require('gpu.js').GPU;
-const gpu = new GPU(/*{ mode: 'dev' }*/);
+const GPU = require('gpu.js').GPU;
+const gpu = new GPU({ mode: 'cpu' });
 
 const getDimension = a => {
     const r = (a1, i) => {
@@ -14,6 +14,27 @@ const getDimension = a => {
 }
 
 /**
+ * @callback deepMapCallback
+ * @param {*} value
+ * @param {Number} i
+ * @param {Array} array
+ */
+/**
+ * 
+ * @param {Array} a the multidimensional array
+ * @param {deepMapCallback} f the function to be mapped
+ * 
+ */
+const deepMap = (a, f) => 
+    a.map((v, i, a1) =>{
+        if(v.length){
+            return deepMap(v, f)
+        }else{
+            return f(v,i,a1)
+        }
+    })
+
+/**
  * Dot product between 2 2D matrices
  * @param {Array<Array<Number>>} a 
  * @param {Array<Array<Number>>} b 
@@ -22,8 +43,8 @@ const matrixDot = (a, b) => {
     if(a[0].length != b.length)
         throw new Error(`invalid dimensions a -> x (${a[0].length}) should equal b -> y (${b.length})`)
     return gpu.createKernel(function (a1, b1) {
-        var sum = 0;
-        for (var i = 0; i < this.constants.aWidth; i++) {
+        let sum = 0;
+        for (let i = 0; i < this.constants.aWidth; i++) {
             sum += a1[this.thread.y][i] * b1[i][this.thread.x];
         }
         return sum;
@@ -56,6 +77,34 @@ const matrixMultiply = (a,b) => {
         }).setOutput([a.length])(a, b);
     }else{
         throw new Error(`invalid array dimension`)
+    }
+}
+
+const matrixAdd = (a, b) => {
+    if(getDimension(a) == 3 && getDimension(b) == 3){
+        if (a.length != b.length || a[0].length != b[0].length || a[0][0].length != b[0][0].length )
+            throw new Error(`invalid dimensions, both arrays should have equal shape`)
+
+        return gpu.createKernel(function (a1, b1) {
+            return a1[this.thread.z][this.thread.y][this.thread.x] + b1[this.thread.z][this.thread.y][this.thread.x]
+        }).setOutput([a[0][0].length, a[0].length, a.length])(a, b);
+    }else if(getDimension(a) == 2 && getDimension(b) == 2){
+        if (a.length != b.length || a[0].length != b[0].length )
+            throw new Error(`invalid dimensions, both arrays should have equal shape`)
+
+        return gpu.createKernel(function (a1, b1) {
+            return a1[this.thread.y][this.thread.x] + b1[this.thread.y][this.thread.x]
+        }).setOutput([a[0].length, a.length])(a, b);
+
+    }else if(getDimension(a) == 1 && getDimension(b) == 1){
+        if (a.length != b.length)
+            throw new Error(`invalid dimensions, both arrays should have equal shape`)
+
+        return gpu.createKernel(function (a1, b1) {
+            return a1[this.thread.x] + b1[this.thread.x]
+        }).setOutput([a.length])(a, b);
+    }else{
+        throw new Error(`invalid array dimension a:${getDimension(a)}, b:${getDimension(b)}`)
     }
 }
 
@@ -210,7 +259,7 @@ const maxPool = (a, f, s) => {
     }
 }
 
-const flattenDeep = arr1 => arr1.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), [])
+const flattenDeep = arr1 => arr1.reduce((acc, val) => val.length ? acc.concat(flattenDeep(val)) : acc.concat(val), [])
 
 class debugGpu{
     constructor(f){
@@ -294,5 +343,7 @@ module.exports = {
   correlate,
   getDimension,
   maxPool,
-  flattenDeep
+  flattenDeep,
+  matrixAdd,
+  deepMap
 };

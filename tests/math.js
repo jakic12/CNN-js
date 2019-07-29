@@ -8,10 +8,33 @@ var {
   correlate,
   getDimension,
   maxPool,
-  flattenDeep
+  flattenDeep,
+  matrixAdd,
+  deepMap
 } = require("../math");
 
 describe('Basic math functions', () => {
+    it(`deep map`, () => {
+        expect(deepMap([
+            [
+                new Float32Array([1,2,3]),
+                new Float32Array([3,2,1])
+            ],
+            [
+                [1,2,3],
+                [3,2,1]
+            ]
+        ],(v) => v+1)).to.eql([
+            [
+                new Float32Array([2,3,4]),
+                new Float32Array([4,3,2])
+            ],
+            [
+                [2,3,4],
+                [4,3,2]
+            ]
+        ])
+    })
     it(`matrix dimension recognition`, () => {
         let m1 = [1,2,3,4],
         m2 = [[1,2,3,4],[1,2,3,4],[1,2,3,4],[1,2,3,4]],
@@ -142,6 +165,38 @@ describe('Basic math functions', () => {
                 [1,2]
             ])
         }).to.throw()
+    })
+
+    it(`matrix addition`, () => {
+        expect(matrixAdd([1,2,3], [3,2,1])).to.eql(new Float32Array([4,4,4]))
+
+        expect(matrixAdd([
+            [1,2,3],
+            [0,0,0],
+            [3,2,1]
+        ],[
+            [4,3,2],
+            [1,1,1],
+            [0,0,1]
+        ])).to.eql([
+            new Float32Array([5,5,5]),
+            new Float32Array([1,1,1]),
+            new Float32Array([3,2,2])
+        ])
+
+        expect(matrixAdd([[
+            [1,2,3],
+            [0,0,0],
+            [3,2,1]
+        ]],[[
+            [4,3,2],
+            [1,1,1],
+            [0,0,1]
+        ]])).to.eql([[
+            new Float32Array([5,5,5]),
+            new Float32Array([1,1,1]),
+            new Float32Array([3,2,2])
+        ]])
     })
 
     it(`double inverse`, () => {
@@ -354,6 +409,8 @@ describe('Basic math functions', () => {
             new Float32Array([3,4])
         ]])
     })
+
+
 
     it(`flattenDeep`, () =>{
         expect(flattenDeep([1,2,3,[1,2,3,4, [2,3,4]]])).to.eql([1, 2, 3, 1, 2, 3, 4, 2, 3, 4])
