@@ -12,13 +12,23 @@ var {
     deepMap
   } = require("./math");
 
+/**
+ * Convolutional neural network, recieves a shape, give it data, train in and save it
+ */
 class CNN{
+    /**
+     * The constructor takes in the shape of the network and
+     * initalizes weights and filters corresponding to the shape
+     * @param {Array<Layer>} shape Array of Layer instances
+     */
     constructor(shape){
         CNN.confirmShape(shape)
         this.shape = shape
 
         const randomWeightF = () => Math.random()*-2
         const randomBiasF = () => Math.random()*-1
+        this.errorF = (expected, actual) => Math.pow(expected - actual, 2)/2
+        this.dErrorF = (expected, actual) => actual - expected
 
         this.learningRate = 0.01
 
@@ -34,21 +44,17 @@ class CNN{
             }
         })
 
-        this.dlayers = []
+        this.dlayers = [] // dlayers are filled on the backpropagation step
 
         this.weights = new Array(shape.length).fill(0).map((_, i) => {
             if(i != 0){
                 if(shape[i].type == LayerType.FC){
-                    if(shape[i-1].type == LayerType.FC || shape[i-1].type == LayerType.FLATTEN){
-                        return new Array(shape[i-1].l).fill(0).map(() =>
-                            new Array(shape[i].l).fill(0).map(randomWeightF)
-                        )
-                    }else{
-                        return new Array(shape[i-1].d).fill(0).map(() =>
-                            new Array(shape[i].l).fill(0).map(randomWeightF)
-                        )
-                    }
+                    // if layer is FC or FLATTEN, init a weight matrix
+                    return new Array(shape[i-1].l).fill(0).map(() =>
+                        new Array(shape[i].l).fill(0).map(randomWeightF)
+                    )
                 }else if(shape[i].type == LayerType.CONV){
+                    // else initialize a new filter
                     return new Array(shape[i].k).fill(0).map(() => 
                         new Array(shape[i-1].d).fill(0).map(() =>
                             new Array(shape[i].f).fill(0).map(() =>
@@ -59,7 +65,7 @@ class CNN{
                 }
             }
         })
-
+        // init biases as the same sizes of their layers
         this.biases = new Array(shape.length).fill(0).map((_, i) => {
             if(i != 0){
                 if(shape[i].type == LayerType.FC){
@@ -101,6 +107,7 @@ class CNN{
                     break;
             }
 
+            // Check for NaN before and after activation
             deepMap(this.layers[i], (x,i,v) => {
                 if(isNaN(x))
                     throw new Error(`[${i}] output NaN before activation`)
@@ -119,6 +126,7 @@ class CNN{
             console.log(i)
         }
 
+        // return last layer
         return this.layers[this.layers.length - 1]
     }
 
@@ -133,11 +141,29 @@ class CNN{
         for(let i = this.shape.length-1; i > 0; i--){
             if(this.shape[i].type == LayerType.FC){
                 if(i == this.shape.length-1){
-                    this.dlayers[i] = this.layers[i].map((v,j) => v - exp[j])
+                    this.dlayers[i] = this.layers[i].map((v,j) => this.dErrorF(v,exp[j]))
                 }else{
                     this.dlayers[i] = matrixDot([this.dlayers[i+1]], transpose(this.weights[i+1]))[0]
                 }
                 //TODO backpropagate for bias
+            }else if(this.shape[i].type == LayerType.FLATTEN){
+                let darray;
+                if(i == this.shape.length-1){
+                    darray = this.layers[i].map((v,j) => this.dErrorF(v,exp[j]))
+                    //TODO test if FLATTEN layer works as a last layer
+                }else{
+                    darray = this.dlayers[i + 1]
+                }
+
+                this.dlayers[i] = new Array(this.shape[i].d).fill(0).map((_, i1) => 
+                    new Array(this.shape[i].h).fill(0).map((_, j) => 
+                        new Array(this.shape[i].w).fill(0).map((_, k) => 
+                            darray[i1 * this.shape[i].h * this.shape[i].w + j * this.shape[i].h + k]   
+                        )
+                    )
+                )
+            }else if(this.shape[i].type == Layer.CONV){
+                //this.dlayers[i] = correlate()
             }
             //TODO backpropagation for non FC layers
         }
@@ -169,7 +195,11 @@ class CNN{
                 if(shape[i-1].d != shape[i].d)
                 throw new Error(`[${i}] POOL: outD doesn't equal inZ inZ: ${shape[i-1].d}, outD: ${shape[i].d}`)
             }else if(shape[i].type == LayerType.FC){
-
+                if(shape[i-1].type != LayerType.FC && shape[i-1].type != LayerType.FLATTEN)
+                    throw new Error(`[${i}] FC: The previous layer should be type FC or FLATTEN`)
+            }else if(shape[i].type == LayerType.FLATTEN){
+                if(shape[i-1].type == LayerType.FLATTEN || shape[i-1].type == LayerType.FC)
+                    throw new Error(`[${i}] FLATTEN: The previous layer can't be flat`)
             }
         }
 
@@ -217,7 +247,7 @@ const Layer = {
      * @param {Number} k number of filters
      * @param {Number} s stride
      * @param {Number} p zero padding
-     * @param {Number} af activation function
+     * @param {function(Number):Number} af activation function
      */
     CONV: function(w, h, d, f, k, s, p, af){
         this.type = LayerType.CONV
@@ -237,7 +267,7 @@ const Layer = {
      * @param {Number} d depth of the output
      * @param {Number} f filter size
      * @param {Number} s stride
-     * @param {Number} af activation function
+     * @param {function(Number):Number} af activation function
      */
     POOL: function(w, h, d, f, s, af){
         this.type = LayerType.POOL
@@ -251,7 +281,7 @@ const Layer = {
     /**
      * A fully connected layer
      * @param {Number} l length of the layer
-     * @param {Number} af activation function
+     * @param {function(Number):Number} af activation function
      */
     FC: function(l, af){
         this.type = LayerType.FC

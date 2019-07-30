@@ -35,6 +35,43 @@ describe('Convolutional neural network', () => {
         expect(() => {
             new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(5, 5, 3, 10, 3, 2, 1) ])
         }).to.throw()
+
+        expect(() => {
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.FC(10) ])
+        }).to.throw()
+
+        expect(() => {
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.FLATTEN(12,12,2), new Layer.FC(10) ])
+        }).not.to.throw()
+
+        expect(
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(6,6,4,4,4,2,1) , new Layer.FLATTEN(5,5,4), new Layer.FC(10) ]).weights.length
+            ,`weights array should be as long as shape`
+        ).to.equal(4)
+
+        expect(
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(6,6,4,4,4,2,1) , new Layer.FLATTEN(5,5,4), new Layer.FC(10) ]).weights[1].length
+        ).to.equal(4)
+
+        expect(
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(6,6,4,4,4,2,1) , new Layer.FLATTEN(5,5,4), new Layer.FC(10) ]).weights[1][0].length
+            ,`filter should be as deep as the previous layer`
+        ).to.equal(2)
+
+        expect(
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(6,6,4,4,4,2,1) , new Layer.FLATTEN(5,5,4), new Layer.FC(10) ]).weights[1][0][0].length
+            ,`filter width should be the same as filter size`
+        ).to.equal(4)
+
+        expect(
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(6,6,4,4,4,2,1) , new Layer.FLATTEN(5,5,4), new Layer.FC(10) ]).weights[3].length
+            ,`fc weight height should be the same as previous layer length`
+        ).to.equal(5*5*4)
+
+        expect(
+            new CNN([ new Layer.INPUT(12, 12, 2), new Layer.CONV(6,6,4,4,4,2,1) , new Layer.FLATTEN(5,5,4), new Layer.FC(10) ]).weights[3][0].length
+            ,`fc weight width should be the same as next layer length`
+        ).to.equal(10)
     })
 
     it(`propagation`, () => {
@@ -51,5 +88,7 @@ describe('Convolutional neural network', () => {
         )]
         let out = cnn.forwardPropagate(input)
         expect(() => { cnn.backpropagate([1]) }).to.throw()
+
+        cnn.backpropagate(trainingSet[0].output)
     })
 })
