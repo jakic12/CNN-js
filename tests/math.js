@@ -10,7 +10,8 @@ var {
   maxPool,
   flattenDeep,
   matrixAdd,
-  deepMap
+  deepMap,
+  update2Dmatrix
 } = require("../math");
 
 describe('Basic math functions', () => {
@@ -400,17 +401,70 @@ describe('Basic math functions', () => {
 
     it(`maxPooling`, () => {
         expect(maxPool([[
-            [1,1,2,4],
-            [5,6,7,8],
-            [3,2,1,0],
-            [1,2,3,4]
+             new Float32Array([1,1,2,4]),
+             new Float32Array([5,6,7,8]),
+             new Float32Array([3,2,1,0]),
+             new Float32Array([1,2,3,4])
         ]], 2, 2)).to.eql([[
             new Float32Array([6,8]),
             new Float32Array([3,4])
         ]])
+
+        expect(maxPool([[
+            new Float32Array([-1,-1,-2,-4]),
+            new Float32Array([-5,-6,-7,-8]),
+            new Float32Array([-3,-2,-1,0]),
+            new Float32Array([-1,-2,-3,-4])
+       ]], 2, 2)).to.eql([[
+           new Float32Array([-1,-2]),
+           new Float32Array([-1,0])
+       ]])
     })
 
+    it(`maxPool coordinateMode`, () => {
+        expect(maxPool([[
+            new Float32Array([1,1,2,4]),
+            new Float32Array([5,6,7,8]),
+            new Float32Array([3,2,1,0]),
+            new Float32Array([1,2,3,4])
+        ]], 2, 2, true)).to.eql([[
+            [{x:1, y:1}, {x:3, y:1}],
+            [{x:0, y:2}, {x:3, y:3}]
+        ]])
+    })
 
+    it(`update2Dmatrix`, () => {
+        expect(update2Dmatrix([
+            [1,1,1],
+            [1,1,1]
+        ], [
+            [2,2,2],
+            [2,2,2]
+        ], 0.25)).to.eql([
+            new Float32Array([1.5,1.5,1.5]),
+            new Float32Array([1.5,1.5,1.5])
+        ])
+
+        expect(update2Dmatrix([[
+            [1,1,1],
+            [1,1,1]
+        ],[
+            [1,1,1],
+            [1,1,1]
+        ]], [[
+            [2,2,2],
+            [2,2,2]
+        ],[
+            [2,2,2],
+            [2,2,2]
+        ]], 0.25)).to.eql([[
+            new Float32Array([1.5,1.5,1.5]),
+            new Float32Array([1.5,1.5,1.5])
+        ],[
+            new Float32Array([1.5,1.5,1.5]),
+            new Float32Array([1.5,1.5,1.5])
+        ]])
+    })
 
     it(`flattenDeep`, () =>{
         expect(flattenDeep([1,2,3,[1,2,3,4, [2,3,4]]])).to.eql([1, 2, 3, 1, 2, 3, 4, 2, 3, 4])

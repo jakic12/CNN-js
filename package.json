@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "dependencies": {
+    "asciichart": "^1.5.9",
     "chai": "^4.2.0",
     "gpu.js": "^2.0.0-rc.21",
     "mnist": "^1.1.0",

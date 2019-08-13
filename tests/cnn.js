@@ -13,6 +13,8 @@ var set = mnist.set(10, 10);
 var trainingSet = set.training;
 var testSet = set.test;
 
+var asciichart = require ('asciichart')
+
 
 describe('Convolutional neural network', () => {
     it(`LeNet5 doesn't throw error`, () => {
@@ -74,7 +76,8 @@ describe('Convolutional neural network', () => {
         ).to.equal(10)
     })
 
-    it(`propagation`, () => {
+    it(`propagation`, function(){
+        this.timeout(0); 
         let cnn = new CNN(NetworkArchitectures.LeNet5)
 
         let input = [new Array(32).fill(0).map((_, i) =>
@@ -86,9 +89,18 @@ describe('Convolutional neural network', () => {
                 }
             })
         )]
-        let out = cnn.forwardPropagate(input)
-        expect(() => { cnn.backpropagate([1]) }).to.throw()
+        
+        //expect(() => { cnn.backpropagate([1]) }).to.throw()
+        let errArr = []
+        for(let iter = 0; iter < 100; iter++){
+            let out = cnn.forwardPropagate(input)
+            cnn.backpropagate(trainingSet[0].output)
+            let err = cnn.getError(trainingSet[0].output)
+            console.log(`[${iter}]`,err)
+            if(iter % 50) errArr.push(err)
+        }
 
-        cnn.backpropagate(trainingSet[0].output)
+        console.log(asciichart.plot(errArr, { height: 5 }))
+
     })
 })
