@@ -23,62 +23,77 @@ class CNN{
     /**
      * The constructor takes in the shape of the network and
      * initalizes weights and filters corresponding to the shape
-     * @param {Array<Layer>} shape Array of Layer instances
+     * @param {Array<Layer>} shape Array of Layer instances or a serialized network
      */
     constructor(shape){
-        CNN.confirmShape(shape)
-        this.shape = shape
+        if(shape.shape){
+            CNN.confirmShape(shape.shape)
+            this.shape = shape.shape
 
-        const randomWeightF = () => (Math.random()*-0.5)*0.001
-        const randomBiasF = () => (Math.random()*-0.5)*0.001
-        this.errorF = (expected, actual) => Math.pow(expected - actual, 2)/2
-        this.dErrorF = (expected, actual) => expected - actual
+            this.errorF = (expected, actual) => Math.pow(expected - actual, 2)/2
+            this.dErrorF = (expected, actual) => expected - actual
 
-        this.learningRate = -0.01
+            this.learningRate = shape.learningRate
 
-        this.layers = new Array(shape.length).fill(0).map((_, i) => {
-            if(shape[i].type == LayerType.FC || shape[i].type == LayerType.FLATTEN){
-                return new Array(shape[i].l).fill(0)
-            }else{
-                return new Array(shape[i].d).fill(0).map(() => 
-                    new Array(shape[i].h).fill(0).map(() =>
-                        new Array(shape[i].w).fill(0)
-                    )
-                )
-            }
-        })
+            this.layers = shape.layers
+            this.dlayers = shape.dlayers
+            this.weights = shape.weights
+            this.biases = shape.biases
+        }else{
+            CNN.confirmShape(shape)
+            this.shape = shape
 
-        this.dlayers = [] // dlayers are filled on the backpropagation step
+            const randomWeightF = () => (Math.random()*-0.5)*0.001
+            const randomBiasF = () => (Math.random()*-0.5)*0.001
+            this.errorF = (expected, actual) => Math.pow(expected - actual, 2)/2
+            this.dErrorF = (expected, actual) => expected - actual
 
-        this.weights = new Array(shape.length).fill(0).map((_, i) => {
-            if(i != 0){
-                if(shape[i].type == LayerType.FC){
-                    // if layer is FC or FLATTEN, init a weight matrix
-                    return new Array(shape[i-1].l).fill(0).map(() =>
-                        new Array(shape[i].l).fill(0).map(randomWeightF)
-                    )
-                }else if(shape[i].type == LayerType.CONV){
-                    // else initialize a new filter
-                    return new Array(shape[i].k).fill(0).map(() => 
-                        new Array(shape[i-1].d).fill(0).map(() =>
-                            new Array(shape[i].f).fill(0).map(() =>
-                                new Array(shape[i].f).fill(0).map(randomWeightF)
-                            )
+            this.learningRate = -0.01
+
+            this.layers = new Array(shape.length).fill(0).map((_, i) => {
+                if(shape[i].type == LayerType.FC || shape[i].type == LayerType.FLATTEN){
+                    return new Array(shape[i].l).fill(0)
+                }else{
+                    return new Array(shape[i].d).fill(0).map(() => 
+                        new Array(shape[i].h).fill(0).map(() =>
+                            new Array(shape[i].w).fill(0)
                         )
                     )
                 }
-            }
-        })
-        // init biases as the same sizes of their layers
-        this.biases = new Array(shape.length).fill(0).map((_, i) => {
-            if(i != 0){
-                if(shape[i].type == LayerType.FC){
-                    return new Array(this.shape[i].l).fill(0).map(randomBiasF)
-                }else{
-                    return new Array(this.shape[i].d).fill(0).map(randomBiasF)
+            })
+
+            this.dlayers = [] // dlayers are filled on the backpropagation step
+
+            this.weights = new Array(shape.length).fill(0).map((_, i) => {
+                if(i != 0){
+                    if(shape[i].type == LayerType.FC){
+                        // if layer is FC or FLATTEN, init a weight matrix
+                        return new Array(shape[i-1].l).fill(0).map(() =>
+                            new Array(shape[i].l).fill(0).map(randomWeightF)
+                        )
+                    }else if(shape[i].type == LayerType.CONV){
+                        // else initialize a new filter
+                        return new Array(shape[i].k).fill(0).map(() => 
+                            new Array(shape[i-1].d).fill(0).map(() =>
+                                new Array(shape[i].f).fill(0).map(() =>
+                                    new Array(shape[i].f).fill(0).map(randomWeightF)
+                                )
+                            )
+                        )
+                    }
                 }
-            }
-        })
+            })
+            // init biases as the same sizes of their layers
+            this.biases = new Array(shape.length).fill(0).map((_, i) => {
+                if(i != 0){
+                    if(shape[i].type == LayerType.FC){
+                        return new Array(this.shape[i].l).fill(0).map(randomBiasF)
+                    }else{
+                        return new Array(this.shape[i].d).fill(0).map(randomBiasF)
+                    }
+                }
+            })
+        }
     }
 
     /**
