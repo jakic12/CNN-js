@@ -172,17 +172,86 @@ const doubleInverse = a => {
  * @param {Array<Array<Array<Array<Number>>>>} f array of filters
  * @param {Number} s stride
  * @param {Number} p zero padding
- * @param {Array<Number>} b bias (array of biases for each output layer)
+ * @param {Number} b array of biases (array of biases for each output layer)
  */
-const correlate = (a, f, s = 1, p = 0, b = null) => {};
+const correlate = (inputs, filters, stride = 1, padding = 0, b = null) => {
+  if (filters[0].length != inputs.length) {
+    throw new Error(
+      `filter depth(${filters[0].length}) doesnt match input depth(${inputs.length})`
+    );
+  }
+
+  if (filters[0][0].length != filters[0][0][0].length) {
+    throw new Error(
+      `filter should be a square matrix(${filters[0][0].length} != ${filters[0][0][0].length})`
+    );
+  }
+
+  if (b && b.length != filters.length)
+    throw new Error(
+      `bias depth(${b.length}), should match output depth(${filters.length})`
+    );
+
+  const F = filters[0][0].length; // Filter height/width
+
+  const D = inputs.length,
+    H = parseInt((inputs[0].length - F + 2 * padding) / stride + 1), // output height
+    W = parseInt((inputs[0][0].length - F + 2 * padding) / stride + 1); // output width
+
+  return filters.map((filter, filterZ) => {
+    const out = [];
+
+    // for every output node
+    for (let i = 0; i < H; i++) {
+      out[i] = [];
+      for (let j = 0; j < W; j++) {
+        let sum = b ? b[filterZ] : 0;
+        for (let z = 0; z < D; z++) {
+          //for every node in filter
+          for (let k = 0; k < F; k++) {
+            for (let h = 0; h < F; h++) {
+              // (h and k are filter coordinates)
+
+              const i1 = i * stride + k - padding;
+              const j1 = j * stride + h - padding;
+
+              if (
+                i1 >= 0 &&
+                i1 < inputs[0].length &&
+                j1 >= 0 &&
+                j1 < inputs[0][0].length
+              )
+                sum += inputs[z][i1][j1] * filter[z][k][h];
+            }
+          }
+        }
+        out[i][j] = sum;
+      }
+    }
+
+    return out;
+  });
+};
+
+/**
+ * This be the same as correlate, but with a flipped filter
+ * @param {Array<Array<Array<Number>>>} a input array
+ * @param {Array<Array<Array<Array<Number>>>>} f array of filters
+ * @param {Number} s stride
+ * @param {Number} p zero padding
+ * @param {*} b
+ */
+const convolute = (a, f, s = 1, p = 0, b = null) => {
+  return correlate(a, doubleInverse(f), s, p, b);
+};
 
 module.exports = {
   matrixMultiply,
   matrixDot,
   transpose,
-  // convolute,
+  convolute,
   doubleInverse,
-  // correlate,
+  correlate,
   getDimension,
   // maxPool,
   // flattenDeep,
