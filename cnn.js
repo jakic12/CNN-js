@@ -132,7 +132,7 @@ class CNN {
     for (let i = 1; i < this.shape.length; i++) {
       switch (this.shape[i].type) {
         case LayerType.CONV:
-          this.layers[i] = convolute(
+          this.layers[i] = correlate(
             this.layers[i - 1],
             this.weights[i],
             this.shape[i].s,
@@ -282,15 +282,18 @@ class CNN {
               )
           );
       } else if (this.shape[i].type == LayerType.CONV) {
-        const { dF, dI } = backPropagateCorrelation(
+        const temp = backPropagateCorrelation(
           this.weights[i],
           this.dlayers[i],
           this.layers[i - 1],
           this.shape[i].s,
           this.shape[i].p
         );
+        const { dF, dI } = temp;
         this.dlayers[i - 1] = dI;
+        //console.log(dI.length, dI);
 
+        // pass the derivatives trough the derivative of the activation function
         if (this.shape[i].daf)
           this.dlayers[i - 1] = matrixMultiply(
             this.dlayers[i - 1],
