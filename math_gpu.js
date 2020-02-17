@@ -461,28 +461,27 @@ const backPropagateCorrelation = (f, dOut, input, s, p) => {
     for (let m = 0; m < f.length; m++) {
       dF[m] = [];
       for (let f_d = 0; f_d < f[m].length; f_d++) {
-        dF[m][f_d] = new Array(f[m][f_d].length)
-          .fill(0)
-          .map((_, i) => new Array(f[m][f_d][i].length).fill(0));
+        dF[m][f_d] = [];
         //console.log(m, f_d, f[m][f_d].length);
-        for (let in_i = 0; in_i < input[f_d].length; in_i++) {
-          for (let in_j = 0; in_j < input[f_d][in_i].length; in_j++) {
+        for (let f_i = 0; f_i < f[m][f_d].length; f_i++) {
+          dF[m][f_d][f_i] = new Array(f[m][f_d][f_i].length).fill(0);
+          for (let f_j = 0; f_j < f[m][f_d][f_i].length; f_j++) {
             for (let dOut_i = 0; dOut_i < dOut[m].length; dOut_i++) {
               for (let dOut_j = 0; dOut_j < dOut[m][dOut_i].length; dOut_j++) {
                 //dOut[m][dOut_i][dOut_j]
                 //     ^ this is important
 
-                const f_i1 = in_i - dOut_i * s + p;
-                const f_j1 = in_j - dOut_j * s + p;
+                const in_i1 = dOut_i * s + p + f_i;
+                const in_j1 = dOut_j * s + p + f_j;
 
                 if (
-                  f_i1 >= 0 &&
-                  f_i1 < f[m][f_d].length &&
-                  f_j1 >= 0 &&
-                  f_j1 < f[m][f_d][f_i1].length
+                  in_i1 >= 0 &&
+                  in_i1 < input[f_d].length &&
+                  in_j1 >= 0 &&
+                  in_j1 < input[f_d][in_i1].length
                 )
-                  dF[m][f_d][f_i1][f_j1] +=
-                    dOut[m][dOut_i][dOut_j] * input[f_d][in_i][in_j];
+                  dF[m][f_d][f_i][f_j] +=
+                    dOut[m][dOut_i][dOut_j] * input[f_d][in_i1][in_j1];
               }
             }
           }
@@ -520,9 +519,12 @@ const backPropagateCorrelation = (f, dOut, input, s, p) => {
       }
     }
 
+    const dB = dOut.map(dOutM => sum(dOutM));
+
     return {
       dF,
-      dI
+      dI,
+      dB
     };
   } else {
     throw new Error(
@@ -737,5 +739,9 @@ module.exports = {
   matrixAdd,
   deepMap,
   backPropagateCorrelation,
-  update2Dmatrix
+  update2Dmatrix,
+  max,
+  sum,
+  softmax,
+  maxIndex
 };
