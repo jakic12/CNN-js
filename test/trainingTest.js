@@ -5,10 +5,15 @@ const {
   NetworkArchitectures
 } = require(`../cnn`);
 
+const { expect } = require(`chai`);
+
+const { softmax, maxIndex } = require(`../math`);
+
 var mnist = require("mnist");
 
 describe(`training test`, () => {
-  it(`should train the network`, () => {
+  it(`should train the network`, function() {
+    this.timeout(0);
     const set = mnist.set(1, 1);
     const trainingSet = set.training;
     const testSet = set.test;
@@ -83,31 +88,41 @@ describe(`training test`, () => {
       new Layer.FC(10, ActivationFunction.TANH, ActivationFunction.DTANH)
       //new Layer.FC(10, ActivationFunction.TANH, ActivationFunction.DTANH)
     ]);
-    cnn.learningRate = -0.1;
-    console.log(trainingSet.length, trainingSet[0]);
-    trainingSetInputs.map((i, index) => {
+    cnn.learningRate = -0.02;
+    //console.log(trainingSet.length, trainingSet[0]);
+    /*trainingSetInputs.map((i, index) => {
       console.log(cnn.forwardPropagate(i));
       console.log(trainingSet[index].output);
-    });
+    });*/
     let errArr = [];
-    for (let epoch = 0; epoch < 20; epoch++) {
+    for (let epoch = 0; epoch < 100; epoch++) {
       let error = 0;
       for (let example = 0; example < trainingSet.length; example++) {
         for (let iter = 0; iter < 10; iter++) {
           const out = cnn.forwardPropagate(trainingSetInputs[example]);
-          cnn.backpropagate(trainingSet[0].output);
-          const err = cnn.getError(trainingSet[0].output);
+          cnn.backpropagate(trainingSet[example].output);
+          const err = cnn.getError(trainingSet[example].output);
           error += err;
-          console.log(epoch, iter, err);
+          //console.log(epoch, iter, err);
         }
       }
-      errArr.push(error);
+      errArr.push(error / (10 * trainingSet.length));
 
       console.log(`epoch:`, epoch, error / (10 * trainingSet.length));
     }
+    errArr.map((_, i) => console.log(i, `,`, errArr[i]));
     trainingSetInputs.map((i, index) => {
-      console.log(cnn.forwardPropagate(i));
-      console.log(trainingSet[index].output);
+      const netOut = cnn.forwardPropagate(i);
+      console.log(`normal`, netOut);
+      console.log(
+        `softmax`,
+        softmax(netOut).map(x => Math.round(x * 100) / 100)
+      );
+      console.log(`expected`, trainingSet[index].output);
+      expect([index, maxIndex(netOut)]).to.eql([
+        index,
+        maxIndex(trainingSet[index].output)
+      ]);
     });
   });
 });
