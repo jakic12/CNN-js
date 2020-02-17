@@ -8,13 +8,14 @@
   },
   "dependencies": {
     "asciichart": "^1.5.9",
-    "chai": "^4.2.0",
     "gpu.js": "^2.0.0-rc.21",
     "mnist": "^1.1.0",
     "mocha": "^6.2.0",
     "nyc": "^14.1.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0"
+  },
   "scripts": {
     "test": "mocha"
   },
