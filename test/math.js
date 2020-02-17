@@ -10,8 +10,12 @@ var {
   //   maxPool,
   //   flattenDeep,
   matrixAdd,
-  deepMap
-  //   update2Dmatrix
+  deepMap,
+  //   update2Dmatrix,
+  max,
+  sum,
+  softmax,
+  maxIndex
 } = require("../math");
 
 describe("Basic math functions", () => {
@@ -653,4 +657,36 @@ describe("Basic math functions", () => {
   // it(`flattenDeep`, () =>{
   //     expect(flattenDeep([1,2,3,[1,2,3,4, [2,3,4]]])).to.eql([1, 2, 3, 1, 2, 3, 4, 2, 3, 4])
   // })
+  it(`max`, () => {
+    expect(max([0, 1, 2, 3])).to.eql(3);
+    expect(max([0, -1, -2, -3])).to.eql(0);
+    expect(max([[1, 2, 4], 3])).to.eql(4);
+    expect(
+      max([
+        [1, 2, 4],
+        [1, 2, [3, 5], [2, 3, [6, 2]]]
+      ])
+    ).to.eql(6);
+  });
+
+  it(`softmax`, () => {
+    expect(softmax([1, 1, 1])).to.eql([1 / 3, 1 / 3, 1 / 3]);
+    expect(sum(softmax([1, 3, 4, 2, 1, 4]))).to.eql(1);
+    expect(
+      Math.round(
+        sum(
+          softmax(
+            new Array(parseInt(Math.random() * 10))
+              .fill(0)
+              .map(() => Math.random() * 3)
+          )
+        ) * 1000
+      ) / 1000
+    ).to.eql(1);
+  });
+
+  it(`maxIndex`, () => {
+    expect(maxIndex([1, 2, 3])).to.eql(2);
+    expect(maxIndex([0, 1, 0, 0, 0])).to.eql(1);
+  });
 });

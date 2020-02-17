@@ -245,6 +245,45 @@ const convolute = (a, f, s = 1, p = 0, b = null) => {
   return correlate(a, doubleInverse(f), s, p, b);
 };
 
+const max = a => {
+  let max = -Infinity;
+  deepMap(a, x => {
+    if (x > max) {
+      max = x;
+    }
+  });
+  return max;
+};
+
+const sum = a => {
+  let sum = 0;
+  deepMap(a, x => {
+    sum += x;
+  });
+  return sum;
+};
+
+const softmax = a => {
+  const sum1 = sum(a);
+  return deepMap(a, x => x / sum1);
+};
+
+const maxIndex = a => {
+  if (getDimension(a) == 1) {
+    let max = a[0];
+    let index = 0;
+    for (let i = 1; i < a.length; i++) {
+      if (a[i] > max) {
+        max = a[i];
+        index = i;
+      }
+    }
+    return index;
+  } else {
+    throw new Error(`maxIndex works only on 1d arrays`);
+  }
+};
+
 module.exports = {
   matrixMultiply,
   matrixDot,
@@ -256,7 +295,11 @@ module.exports = {
   // maxPool,
   // flattenDeep,
   matrixAdd,
-  deepMap
-  // backPropagateCorrelation,
+  deepMap,
+  backPropagateCorrelation,
   // update2Dmatrix
+  max,
+  sum,
+  softmax,
+  maxIndex
 };
