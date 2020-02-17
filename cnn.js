@@ -289,7 +289,7 @@ class CNN {
           this.shape[i].s,
           this.shape[i].p
         );
-        const { dF, dI } = temp;
+        const { dF, dI, dB } = temp;
         this.dlayers[i - 1] = dI;
         //console.log(dI.length, dI);
 
@@ -300,10 +300,16 @@ class CNN {
             deepMap(this.layers[i - 1], v => this.shape[i].daf(v))
           );
 
+        //update weights
         this.weights[i] = update2Dmatrix(
           this.weights[i],
           dF,
           this.learningRate
+        );
+
+        //update biases
+        this.biases[i] = this.biases[i].map(
+          (b, i) => b + dB[i] * this.learningRate
         );
       } else if (this.shape[i].type == LayerType.POOL) {
         let dIn = new Array(this.shape[i - 1].d)
