@@ -43,8 +43,11 @@ class CNN {
       CNN.confirmShape(shape);
       this.shape = shape;
 
-      const randomWeightF = () => Math.random() * -0.5 * 0.001;
-      const randomBiasF = () => Math.random() * -0.5 * 0.001;
+      const xavier = (fan_in, fan_out) =>
+        Math.random() * Math.sqrt(6 / (fan_in + fan_out));
+      const kaiming = (fan_in, fan_out) =>
+        (Math.random() * 2 - 1) * Math.sqrt(2 / fan_in);
+      const randomBiasF = () => 0;
       this.errorF = (expected, actual) => Math.pow(expected - actual, 2) / 2;
       this.dErrorF = (expected, actual) => expected - actual;
 
@@ -75,7 +78,11 @@ class CNN {
             // if layer is FC or FLATTEN, init a weight matrix
             return new Array(shape[i - 1].l)
               .fill(0)
-              .map(() => new Array(shape[i].l).fill(0).map(randomWeightF));
+              .map(() =>
+                new Array(shape[i].l)
+                  .fill(0)
+                  .map(l => xavier(shape[i - 1].l, shape[i].l))
+              );
           } else if (shape[i].type == LayerType.CONV) {
             // else initialize a new filter
             return new Array(shape[i].k)
@@ -87,7 +94,13 @@ class CNN {
                     new Array(shape[i].f)
                       .fill(0)
                       .map(() =>
-                        new Array(shape[i].f).fill(0).map(randomWeightF)
+                        new Array(shape[i].f)
+                          .fill(0)
+                          .map((_, l) =>
+                            kaiming(
+                              shape[i - 1].w * shape[i - 1].d * shape[i - 1].h
+                            )
+                          )
                       )
                   )
               );
