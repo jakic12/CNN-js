@@ -284,6 +284,169 @@ const maxIndex = a => {
   }
 };
 
+/**
+ * update matrix a with da multiplied by a coefficient
+ * @param {Array<Array<Number>>} a matrix to be updated
+ * @param {Array<Array<Number>>} dA delta a
+ * @param {Number} c the coefficient for Da to be multiplied with
+ */
+const update2Dmatrix = (a, dA, c) =>
+  a.map((v, i) => {
+    if (v && v.length) {
+      return update2Dmatrix(a[i], dA[i], c);
+    } else {
+      return a[i] + dA[i] * c;
+    }
+  });
+
+/**
+ *
+ * @param {Array<Array<Array<Array<Number>>>>} f the filter used in the correlation
+ * @param {Array<Array<Array<Number>>>} dOut derivative od the next layer
+ * @param {Array<Array<Array<Number>>>} input the input used at the correlation
+ * @param {Number} s stride
+ * @param {Number} p padding
+ */
+const backPropagateCorrelation = (f, dOut, input, s, p) => {
+  if (getDimension(input) == 3 && getDimension(f) == 4) {
+    if (f[0].length != input.length) {
+      throw new Error(`filter depth doesnt match input depth`);
+    }
+
+    //depths dont mix, so depth is the same for input and filter
+    //create an array with the same dimensions as filter
+    const dF = [];
+
+    // m -> filter number
+    for (let m = 0; m < f.length; m++) {
+      dF[m] = [];
+      for (let f_d = 0; f_d < f[m].length; f_d++) {
+        dF[m][f_d] = [];
+        //console.log(m, f_d, f[m][f_d].length);
+        for (let f_i = 0; f_i < f[m][f_d].length; f_i++) {
+          dF[m][f_d][f_i] = new Array(f[m][f_d][f_i].length).fill(0);
+          for (let f_j = 0; f_j < f[m][f_d][f_i].length; f_j++) {
+            for (let dOut_i = 0; dOut_i < dOut[m].length; dOut_i++) {
+              for (let dOut_j = 0; dOut_j < dOut[m][dOut_i].length; dOut_j++) {
+                //dOut[m][dOut_i][dOut_j]
+                //     ^ this is important
+
+                const in_i1 = dOut_i * s + p + f_i;
+                const in_j1 = dOut_j * s + p + f_j;
+
+                if (
+                  in_i1 >= 0 &&
+                  in_i1 < input[f_d].length &&
+                  in_j1 >= 0 &&
+                  in_j1 < input[f_d][in_i1].length
+                )
+                  dF[m][f_d][f_i][f_j] +=
+                    dOut[m][dOut_i][dOut_j] * input[f_d][in_i1][in_j1];
+              }
+            }
+          }
+        }
+      }
+    }
+    const dI = [];
+    for (let m = 0; m < f.length; m++) {
+      for (let in_d = 0; in_d < input.length; in_d++) {
+        dI[in_d] = [];
+        //note: f_d and in_d are the more or less the same thing
+        for (let in_i = 0; in_i < input[in_d].length; in_i++) {
+          dI[in_d][in_i] = new Array(input[in_d][in_i].length).fill(0);
+          for (let in_j = 0; in_j < input[in_d][in_i].length; in_j++) {
+            for (let dOut_i = 0; dOut_i < dOut[m].length; dOut_i++) {
+              for (let dOut_j = 0; dOut_j < dOut[m][dOut_i].length; dOut_j++) {
+                //coordinates of the filter value that affected input[in_i][in_j] => dOut[m][dOut_i][dOut_j]
+                const f_i1 = in_i - dOut_i * s + p;
+                const f_j1 = in_j - dOut_j * s + p;
+
+                if (!dI[in_d][in_i]) dI[in_d][in_i] = [];
+
+                if (
+                  f_i1 >= 0 &&
+                  f_i1 < f[m][in_d].length &&
+                  f_j1 >= 0 &&
+                  f_j1 < f[m][in_d][f_i1].length
+                )
+                  // prettier-ignore
+                  dI[in_d][in_i][in_j] += dOut[m][dOut_i][dOut_j] * f[m][in_d][f_i1][f_j1];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const dB = dOut.map(dOutM => sum(dOutM));
+
+    return {
+      dF,
+      dI,
+      dB
+    };
+  } else {
+    throw new Error(
+      `invalid array dimension (${getDimension(input)}, ${getDimension(f)})`
+    );
+  }
+};
+
+/**
+ * Reduces x and y dimensions of an array by max pooling
+ * @param {Array<Array<Array<Number>>>} a the input array
+ * @param {Number} f filter size
+ * @param {Number} s stride
+ * @param {boolean} coordinateMode return only coordinates of the max number
+ */
+const maxPool = (a, f, s, coordinateMode = false) => {
+  if (getDimension(a) == 3) {
+    return a.map(layer2d => {
+      const outY = (layer2d.length - f) / s + 1;
+      const outX = (layer2d[0].length - f) / s + 1;
+
+      let outLayer = [];
+      for (let y = 0; y < outY; y++) {
+        outLayer[y] = [];
+        for (let x = 0; x < outX; x++) {
+          let max = layer2d[y * s][x * s];
+          let maxCoords = { x: x * s, y: y * s };
+
+          for (let i = 0; i < f; i++) {
+            for (let j = 0; j < f; j++) {
+              let y1 = y * s + i;
+              let x1 = x * s + j;
+
+              if (layer2d[y1][x1] > max) {
+                max = layer2d[y1][x1];
+                maxCoords = { x: x1, y: y1 };
+              }
+            }
+          }
+          if (coordinateMode) outLayer[y][x] = maxCoords;
+          else outLayer[y][x] = max;
+        }
+      }
+      return outLayer;
+    });
+  } else {
+    throw new Error(
+      `invalid array dimension (${getDimension(a)}), should be 3`
+    );
+  }
+};
+
+/**
+ * Converts an n-dimensional to a 1-dimensional array
+ * @param {Array} arr1 n-dimensional array
+ */
+const flattenDeep = arr1 =>
+  arr1.reduce(
+    (acc, val) => (val.length ? acc.concat(flattenDeep(val)) : acc.concat(val)),
+    []
+  );
+
 module.exports = {
   matrixMultiply,
   matrixDot,
@@ -292,12 +455,12 @@ module.exports = {
   doubleInverse,
   correlate,
   getDimension,
-  // maxPool,
-  // flattenDeep,
+  maxPool,
+  flattenDeep,
   matrixAdd,
   deepMap,
   backPropagateCorrelation,
-  // update2Dmatrix
+  update2Dmatrix,
   max,
   sum,
   softmax,

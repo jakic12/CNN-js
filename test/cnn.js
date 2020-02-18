@@ -13,8 +13,6 @@ var set = mnist.set(10, 10);
 var trainingSet = set.training;
 var testSet = set.test;
 
-var asciichart = require("asciichart");
-
 describe("Convolutional neural network", () => {
   it(`LeNet5 doesn't throw error`, () => {
     expect(() => new CNN(NetworkArchitectures.LeNet5)).not.to.throw();
@@ -115,7 +113,7 @@ describe("Convolutional neural network", () => {
     ).to.equal(10);
   });
 
-  it(`propagation`, function() {
+  it(`error reduces`, function() {
     this.timeout(0);
     let cnn = new CNN(NetworkArchitectures.LeNet5);
 
@@ -131,16 +129,41 @@ describe("Convolutional neural network", () => {
       )
     ];
 
-    //expect(() => { cnn.backpropagate([1]) }).to.throw()
-    let errArr = [];
-    for (let iter = 0; iter < 100; iter++) {
-      let out = cnn.forwardPropagate(input);
-      cnn.backpropagate(trainingSet[0].output);
-      let err = cnn.getError(trainingSet[0].output);
-      console.log(`[${iter}]`, err);
-      if (iter % 50) errArr.push(err);
-    }
+    expect(() => {
+      cnn.backpropagate([1]);
+    }).to.throw();
 
-    console.log(asciichart.plot(errArr, { height: 5 }));
+    expect(() => {
+      cnn.forwardPropagate([1]);
+    });
+
+    const diff = (a, b) =>
+      a.map((v, i) => {
+        if (b[i] == v) {
+          console.log(v + ` ` + b[i]);
+        } else if (b[i] > v) {
+          console.log(v + ` \u001b[32m` + b[i] + `\u001b[0m`);
+        } else {
+          console.log(v + ` \u001b[31m` + b[i] + `\u001b[0m`);
+        }
+      });
+
+    let errArr = [];
+    cnn.learningRate = -0.001;
+    for (let iter = 0; iter < 10; iter++) {
+      const prevOut = cnn.layers[cnn.layers.length - 1];
+      let out = cnn.forwardPropagate(input);
+      /*if (iter != 0) {
+        diff(prevOut, out);
+      }*/
+      let err = cnn.getError(trainingSet[0].output);
+      errArr.push(err);
+      cnn.backpropagate(trainingSet[0].output);
+    }
+    errArr.map((t, i) => {
+      if (i > 0) {
+        expect(errArr[i - 1]).to.be.above(t);
+      }
+    });
   });
 });
