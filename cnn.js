@@ -14,7 +14,7 @@ var {
   deepMap,
   backPropagateCorrelation,
   update2Dmatrix
-} = require("./math_gpu");
+} = require("./math");
 
 /**
  * Convolutional neural network, recieves a shape, give it data, train in and save it
