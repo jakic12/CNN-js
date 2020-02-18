@@ -14,7 +14,7 @@ var {
   update2Dmatrix
 } = require("../math_gpu");
 
-describe("Basic math functions", () => {
+describe("gpu Basic math functions", () => {
   it(`deep map`, () => {
     expect(
       deepMap(
@@ -69,7 +69,7 @@ describe("Basic math functions", () => {
     expect(getDimension(m3)).to.eql(3);
     expect(getDimension([m3])).to.eql(4);
   });
-  describe(`matrix dot product`, () => {
+  describe(`gpu matrix dot product`, () => {
     it(`throws error on invalid dimensions`, () => {
       expect(() => {
         matrixDot([[1, 2]], [[1, 2, 3, 4]]);
