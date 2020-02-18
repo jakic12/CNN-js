@@ -30,8 +30,8 @@ class CNN {
       CNN.confirmShape(shape.shape);
       this.shape = shape.shape;
 
-      this.errorF = (expected, actual) => Math.pow(expected - actual, 2) / 2;
-      this.dErrorF = (expected, actual) => expected - actual;
+      this.errorF = (expected, actual) => Math.pow(actual - expected, 2) / 2;
+      this.dErrorF = (expected, actual) => actual - expected;
 
       this.learningRate = shape.learningRate;
 
@@ -48,8 +48,8 @@ class CNN {
       const kaiming = (fan_in, fan_out) =>
         (Math.random() * 2 - 1) * Math.sqrt(2 / fan_in);
       const randomBiasF = () => 0;
-      this.errorF = (expected, actual) => Math.pow(expected - actual, 2) / 2;
-      this.dErrorF = (expected, actual) => expected - actual;
+      this.errorF = (expected, actual) => Math.pow(actual - expected, 2) / 2;
+      this.dErrorF = (expected, actual) => actual - expected;
 
       this.learningRate = -0.01;
 
@@ -208,7 +208,7 @@ class CNN {
       );
 
     let dout = this.layers[this.shape.length - 1].map((v, j) =>
-      this.errorF(v, exp[j])
+      this.errorF(exp[j], v)
     );
     this.error = dout.reduce((a, b) => a + b, 0);
 
@@ -234,7 +234,7 @@ class CNN {
       if (this.shape[i].type == LayerType.FC) {
         if (i == this.shape.length - 1) {
           this.dlayers[i] = this.layers[i].map((v, j) =>
-            this.dErrorF(v, exp[j])
+            this.dErrorF(exp[j], v)
           );
         } else {
           this.dlayers[i] = matrixDot(
@@ -259,7 +259,7 @@ class CNN {
       } else if (this.shape[i].type == LayerType.FLATTEN) {
         let darray;
         if (i == this.shape.length - 1) {
-          darray = this.layers[i].map((v, j) => this.dErrorF(v, exp[j]));
+          darray = this.layers[i].map((v, j) => this.dErrorF(exp[j], v));
           //TODO test if FLATTEN layer works as a last layer
         } else {
           darray = matrixDot(
