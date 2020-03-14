@@ -620,5 +620,6 @@ module.exports = {
   CNN,
   ActivationFunction,
   Layer,
-  NetworkArchitectures
+  NetworkArchitectures,
+  LayerType
 };
