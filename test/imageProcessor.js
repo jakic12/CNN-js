@@ -14,7 +14,7 @@ describe("Image processor tests", () => {
     await arrayToImage(
       deepMap(
         deepNormalize(
-          await imageToArray(`test/testImage.jpg`, { x: 100, y: 100 })
+          await imageToArray(`test/testImage.jpg`, { x: 100, y: 100, z: 1 })
         ),
         (e) => e * 255
       ),
