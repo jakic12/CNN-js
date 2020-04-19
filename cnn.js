@@ -146,7 +146,7 @@ class CNN {
       this.learningRate *= 1 / (1 + decay * epoch);
     }
 
-    onEnd();
+    if (onEnd) onEnd();
   }
 
   /**
