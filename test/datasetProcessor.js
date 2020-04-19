@@ -3,17 +3,37 @@ const {
   openDatasetFromBuffer,
   datasetToUint8Array,
   vectorizeDatasetLabels,
+  stringToUint8Array,
+  uint8ArrayToString,
 } = require(`../datasetProcessor`);
 const { arrayToImage } = require(`../imageProcessor`);
 const { expect } = require(`chai`);
 const { sum } = require(`../math`);
 
 describe("Dataset processor tests", () => {
+  it(`Converts array to string and back`, function () {
+    const arr = new Uint8Array(new Array(100).fill(255));
+    expect(stringToUint8Array(uint8ArrayToString(arr))).to.deep.equal(arr);
+  });
   it(`Converts to array without errors`, function () {
     this.timeout(0);
     const buffer = fs.readFileSync(`test/data_batch_1.bin`);
     console.log(buffer);
     console.log(openDatasetFromBuffer(buffer));
+
+    const uintArr = datasetToUint8Array(
+      openDatasetFromBuffer(buffer).filter((_e, i) => i < 10)
+    );
+
+    /*console.log(uintArr.length);
+    const outTest = uint8ArrayToString(uintArr);
+    console.log(outTest.length);
+    const back = stringToUint8Array(outTest);
+    console.log(back.length);
+
+    console.log(openDatasetFromBuffer(back));
+
+    fs.writeFileSync(`test/datasetAsJson.bin`, outTest);*/
   });
 
   it(`Save an image from the dataset`, function () {

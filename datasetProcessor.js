@@ -39,6 +39,19 @@ const vectorizeDatasetLabels = (dataset, outLength) => {
   return dataset;
 };
 
+const uint8ArrayToString = (buf) => {
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
+};
+
+const stringToUint8Array = (str) => {
+  var buf = new ArrayBuffer(str.length);
+  var bufView = new Uint8Array(buf);
+  for (var i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return bufView;
+};
+
 const datasetToUint8Array = (dataset) => {
   const imageSize = dataset[0].input[0].length;
   const imageColorDepth = dataset[0].input.length;
@@ -71,4 +84,6 @@ module.exports = {
   openDatasetFromBuffer,
   datasetToUint8Array,
   vectorizeDatasetLabels,
+  stringToUint8Array,
+  uint8ArrayToString,
 };
