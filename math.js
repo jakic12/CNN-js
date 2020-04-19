@@ -454,6 +454,12 @@ const deepNormalize = (arr, max1) => {
   return deepMap(arr, (e) => e / max1);
 };
 
+const vectorize = (label, length) => {
+  const outArr = new Array(length).fill(0);
+  outArr[label] = 1;
+  return outArr;
+};
+
 module.exports = {
   matrixMultiply,
   matrixDot,
@@ -473,4 +479,5 @@ module.exports = {
   softmax,
   maxIndex,
   deepNormalize,
+  vectorize,
 };
