@@ -32,8 +32,8 @@ describe(`training test`, () => {
 
     cnn.sgd({
       learningRate: -0.01,
-      epochs: 10,
-      decay: 0.1,
+      epochs: 100,
+      decay: 0.05,
       dataset: trainingSet,
       onProgress: (epoch, err, learningRate) => {
         errArr.push(err);
