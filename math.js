@@ -1,4 +1,4 @@
-const getDimension = a => {
+const getDimension = (a) => {
   const r = (a1, i) => {
     if (a1.length) {
       return r(a1[0], i + 1);
@@ -115,7 +115,7 @@ const matrixAdd = (a, b) => {
   }
 };
 
-const transpose = a => {
+const transpose = (a) => {
   if (getDimension(a) > 2)
     throw new Error(`transpose supports up to 2d arrays`);
 
@@ -137,7 +137,7 @@ const transpose = a => {
  * Flips kernels (array of 3d kernels, flips only kernels)
  * @param {Array<Array<Array<Array<Number>>>>} a
  */
-const doubleInverse = a => {
+const doubleInverse = (a) => {
   if (getDimension(a) == 1) {
     return doubleInverse([[[a]]])[0][0][0];
   } else if (getDimension(a) == 2) {
@@ -245,9 +245,9 @@ const convolute = (a, f, s = 1, p = 0, b = null) => {
   return correlate(a, doubleInverse(f), s, p, b);
 };
 
-const max = a => {
+const max = (a) => {
   let max = -Infinity;
-  deepMap(a, x => {
+  deepMap(a, (x) => {
     if (x > max) {
       max = x;
     }
@@ -255,20 +255,20 @@ const max = a => {
   return max;
 };
 
-const sum = a => {
+const sum = (a) => {
   let sum = 0;
-  deepMap(a, x => {
+  deepMap(a, (x) => {
     sum += x;
   });
   return sum;
 };
 
-const softmax = a => {
+const softmax = (a) => {
   const sum1 = sum(a);
-  return deepMap(a, x => x / sum1);
+  return deepMap(a, (x) => x / sum1);
 };
 
-const maxIndex = a => {
+const maxIndex = (a) => {
   if (getDimension(a) == 1) {
     let max = a[0];
     let index = 0;
@@ -379,12 +379,12 @@ const backPropagateCorrelation = (f, dOut, input, s, p) => {
       }
     }
 
-    const dB = dOut.map(dOutM => sum(dOutM));
+    const dB = dOut.map((dOutM) => sum(dOutM));
 
     return {
       dF,
       dI,
-      dB
+      dB,
     };
   } else {
     throw new Error(
@@ -402,7 +402,7 @@ const backPropagateCorrelation = (f, dOut, input, s, p) => {
  */
 const maxPool = (a, f, s, coordinateMode = false) => {
   if (getDimension(a) == 3) {
-    return a.map(layer2d => {
+    return a.map((layer2d) => {
       const outY = (layer2d.length - f) / s + 1;
       const outX = (layer2d[0].length - f) / s + 1;
 
@@ -441,11 +441,24 @@ const maxPool = (a, f, s, coordinateMode = false) => {
  * Converts an n-dimensional to a 1-dimensional array
  * @param {Array} arr1 n-dimensional array
  */
-const flattenDeep = arr1 =>
+const flattenDeep = (arr1) =>
   arr1.reduce(
     (acc, val) => (val.length ? acc.concat(flattenDeep(val)) : acc.concat(val)),
     []
   );
+
+const deepNormalize = (arr, max1) => {
+  if (!max1) {
+    max1 = max(arr);
+  }
+  return deepMap(arr, (e) => e / max1);
+};
+
+const vectorize = (label, length) => {
+  const outArr = new Array(length).fill(0);
+  outArr[label] = 1;
+  return outArr;
+};
 
 module.exports = {
   matrixMultiply,
@@ -464,5 +477,7 @@ module.exports = {
   max,
   sum,
   softmax,
-  maxIndex
+  maxIndex,
+  deepNormalize,
+  vectorize,
 };
