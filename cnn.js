@@ -143,7 +143,7 @@ class CNN {
 
       if (onProgress)
         onProgress(epoch, error / dataset.length, this.learningRate);
-      this.learningRate *= 1 / (1 + decay * epoch);
+      this.learningRate = learningRate / (1 + decay * epoch);
     }
 
     if (onEnd) onEnd();
