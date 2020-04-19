@@ -425,8 +425,6 @@ class CNN {
           this.learningRate
         );
 
-        this.dlayers;
-
         //update biases
         this.biases[i] = this.biases[i].map(
           (b, i) => b + dB[i] * this.learningRate
