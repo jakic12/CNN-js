@@ -121,6 +121,34 @@ class CNN {
     }
   }
 
+  sgd({
+    dataset,
+    epochs,
+    learningRate = this.learningRate,
+    decay = 0,
+    onProgress,
+    onEnd,
+  }) {
+    this.learningRate = learningRate;
+
+    for (let epoch = 0; epoch < epochs; epoch++) {
+      let error = 0;
+      for (let example = 0; example < dataset.length; example++) {
+        this.forwardPropagate(dataset[example].input);
+        this.backpropagate(dataset[example].output);
+        this.updateWeights();
+        const err = this.getError(dataset[example].output);
+        error += err;
+      }
+
+      if (onProgress)
+        onProgress(epoch, error / dataset.length, this.learningRate);
+      this.learningRate *= 1 / (1 + decay * epoch);
+    }
+
+    onEnd();
+  }
+
   /**
    * Pass the data trough all layers and return the last one
    * @param {Array<Array<Array<Number>>>} data
@@ -211,7 +239,9 @@ class CNN {
     let dout = this.layers[this.shape.length - 1].map((v, j) =>
       this.errorF(exp[j], v)
     );
-    this.error = dout.reduce((a, b) => a + b, 0);
+    this.error =
+      dout.reduce((a, b) => a + b, 0) /
+      this.layers[this.shape.length - 1].length;
 
     if (returnArray) return dout;
     else return this.error;
@@ -584,6 +614,63 @@ const Layer = {
 const NetworkArchitectures = {
   LeNet5: [
     new Layer.INPUT(32, 32, 1),
+    new Layer.CONV(
+      28,
+      28,
+      6,
+      5,
+      6,
+      1,
+      0,
+      ActivationFunction.TANH,
+      ActivationFunction.DTANH
+    ),
+    new Layer.POOL(
+      14,
+      14,
+      6,
+      2,
+      2,
+      ActivationFunction.TANH,
+      ActivationFunction.DTANH
+    ),
+    new Layer.CONV(
+      10,
+      10,
+      16,
+      5,
+      16,
+      1,
+      0,
+      ActivationFunction.TANH,
+      ActivationFunction.DTANH
+    ),
+    new Layer.POOL(
+      5,
+      5,
+      16,
+      2,
+      2,
+      ActivationFunction.TANH,
+      ActivationFunction.DTANH
+    ),
+    new Layer.CONV(
+      1,
+      1,
+      120,
+      5,
+      120,
+      1,
+      0,
+      ActivationFunction.TANH,
+      ActivationFunction.DTANH
+    ),
+    new Layer.FLATTEN(1, 1, 120),
+    new Layer.FC(84, ActivationFunction.TANH, ActivationFunction.DTANH),
+    new Layer.FC(10, ActivationFunction.TANH, ActivationFunction.DTANH),
+  ],
+  LeNet5Color: [
+    new Layer.INPUT(32, 32, 3),
     new Layer.CONV(
       28,
       28,
