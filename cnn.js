@@ -14,6 +14,7 @@ var {
   deepMap,
   backPropagateCorrelation,
   update2Dmatrix,
+  maxIndex,
 } = require("./math");
 
 /**
@@ -133,16 +134,26 @@ class CNN {
 
     for (let epoch = 0; epoch < epochs; epoch++) {
       let error = 0;
+      let correct = 0;
       for (let example = 0; example < dataset.length; example++) {
-        this.forwardPropagate(dataset[example].input);
+        let out = this.forwardPropagate(dataset[example].input);
         this.backpropagate(dataset[example].output);
         this.updateWeights();
         const err = this.getError(dataset[example].output);
         error += err;
+
+        if (maxIndex(out) === maxIndex(dataset[example].output)) {
+          correct++;
+        }
       }
 
       if (onProgress)
-        onProgress(epoch, error / dataset.length, this.learningRate);
+        onProgress(
+          epoch,
+          correct / dataset.length,
+          error / dataset.length,
+          this.learningRate
+        );
       this.learningRate = learningRate / (1 + decay * epoch);
     }
 
