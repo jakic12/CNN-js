@@ -158,7 +158,7 @@ describe("Convolutional neural network", () => {
       }*/
       let err = cnn.getError(trainingSet[0].output);
       errArr.push(err);
-      cnn.backpropagate(trainingSet[0].output);
+      cnn.backpropagate(trainingSet[0].output, true);
     }
     errArr.map((t, i) => {
       if (i > 0) {
