@@ -32,8 +32,7 @@ describe("Dataset processor tests", () => {
     console.log(back.length);
 
     console.log(openDatasetFromBuffer(back));
-
-    fs.writeFileSync(`test/datasetAsJson.bin`, outTest);*/
+    fs.writeFileSync(`test/datasetAsJson.bin`, JSON.stringify(outTest));*/
   });
 
   it(`Save an image from the dataset`, function () {
