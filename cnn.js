@@ -66,7 +66,7 @@ class CNN {
             .map(() =>
               new Array(shape[i].h)
                 .fill(0)
-                .map(() => new Array(shape[i].w).fill(0))
+                .map(() => new Array(shape[i].w).fill(0)),
             );
         }
       });
@@ -82,7 +82,7 @@ class CNN {
               .map(() =>
                 new Array(shape[i].l)
                   .fill(0)
-                  .map((l) => xavier(shape[i - 1].l, shape[i].l))
+                  .map(l => xavier(shape[i - 1].l, shape[i].l)),
               );
           } else if (shape[i].type == LayerType.CONV) {
             // else initialize a new filter
@@ -99,11 +99,11 @@ class CNN {
                           .fill(0)
                           .map((_, l) =>
                             kaiming(
-                              shape[i - 1].w * shape[i - 1].d * shape[i - 1].h
-                            )
-                          )
-                      )
-                  )
+                              shape[i - 1].w * shape[i - 1].d * shape[i - 1].h,
+                            ),
+                          ),
+                      ),
+                  ),
               );
           }
         }
@@ -152,7 +152,7 @@ class CNN {
           epoch,
           correct / dataset.length,
           error / dataset.length,
-          this.learningRate
+          this.learningRate,
         );
       this.learningRate = learningRate / (1 + decay * epoch);
     }
@@ -167,17 +167,17 @@ class CNN {
   forwardPropagate(data) {
     if (data.length != this.shape[0].d)
       throw new Error(
-        `data depth (${data.length}) doesnt match required depth (${this.shape[0].d})`
+        `data depth (${data.length}) doesnt match required depth (${this.shape[0].d})`,
       );
 
     if (data[0].length != this.shape[0].h)
       throw new Error(
-        `data height (${data[0].length}) doesnt match required height (${this.shape[0].h})`
+        `data height (${data[0].length}) doesnt match required height (${this.shape[0].h})`,
       );
 
     if (data[0][0].length != this.shape[0].w)
       throw new Error(
-        `data width (${data[0][0].length}) doesnt match required width (${this.shape[0].w})`
+        `data width (${data[0][0].length}) doesnt match required width (${this.shape[0].w})`,
       );
 
     this.layers[0] = data;
@@ -190,14 +190,14 @@ class CNN {
             this.weights[i],
             this.shape[i].s,
             this.shape[i].p,
-            this.biases[i]
+            this.biases[i],
           );
           break;
         case LayerType.POOL:
           this.layers[i] = maxPool(
             this.layers[i - 1],
             this.shape[i].f,
-            this.shape[i].s
+            this.shape[i].s,
           );
           break;
         case LayerType.FLATTEN:
@@ -206,7 +206,7 @@ class CNN {
         case LayerType.FC:
           this.layers[i] = matrixAdd(
             matrixDot([this.layers[i - 1]], this.weights[i])[0],
-            this.biases[i]
+            this.biases[i],
           );
           break;
       }
@@ -218,9 +218,9 @@ class CNN {
       });
 
       if (this.shape[i].af)
-        this.layers[i] = deepMap(this.layers[i], (x) => this.shape[i].af(x));
+        this.layers[i] = deepMap(this.layers[i], x => this.shape[i].af(x));
 
-      deepMap(this.layers[i], (x) => {
+      deepMap(this.layers[i], x => {
         if (isNaN(x)) throw new Error(`[${i}] output NaN after activation`);
         return x;
       });
@@ -244,11 +244,11 @@ class CNN {
           exp.length
         }) doesn't equal last layer length (${
           this.shape[this.shape.length - 1].l
-        })`
+        })`,
       );
 
     let dout = this.layers[this.shape.length - 1].map((v, j) =>
-      this.errorF(exp[j], v)
+      this.errorF(exp[j], v),
     );
     this.error =
       dout.reduce((a, b) => a + b, 0) /
@@ -269,26 +269,26 @@ class CNN {
           exp.length
         }) doesn't equal last layer length (${
           this.shape[this.shape.length - 1].l
-        })`
+        })`,
       );
 
     for (let i = this.shape.length - 1; i > 0; i--) {
       if (this.shape[i].type == LayerType.FC) {
         if (i == this.shape.length - 1) {
           this.dlayers[i] = this.layers[i].map((v, j) =>
-            this.dErrorF(exp[j], v)
+            this.dErrorF(exp[j], v),
           );
         } else {
           this.dlayers[i] = matrixDot(
             [this.dlayers[i + 1]],
-            transpose(this.weights[i + 1])
+            transpose(this.weights[i + 1]),
           )[0];
         }
 
         if (this.shape[i].daf)
           this.dlayers[i] = matrixMultiply(
             this.dlayers[i],
-            deepMap(this.layers[i], (v) => this.shape[i].daf(v))
+            deepMap(this.layers[i], v => this.shape[i].daf(v)),
           );
 
         if (updateWeights)
@@ -307,14 +307,14 @@ class CNN {
         } else {
           darray = matrixDot(
             [this.dlayers[i + 1]],
-            transpose(this.weights[i + 1])
+            transpose(this.weights[i + 1]),
           )[0];
         }
 
         if (this.shape[i + 1].daf)
           darray = matrixMultiply(
             darray,
-            deepMap(this.layers[i], (v) => this.shape[i + 1].daf(v))
+            deepMap(this.layers[i], v => this.shape[i + 1].daf(v)),
           );
 
         this.dlayers[i] = darray;
@@ -333,9 +333,9 @@ class CNN {
                         i1 * this.shape[i].h * this.shape[i].w +
                           j * this.shape[i].h +
                           k
-                      ]
-                  )
-              )
+                      ],
+                  ),
+              ),
           );
       } else if (this.shape[i].type == LayerType.CONV) {
         const temp = backPropagateCorrelation(
@@ -343,9 +343,9 @@ class CNN {
           this.dlayers[i],
           this.layers[i - 1],
           this.shape[i].s,
-          this.shape[i].p
+          this.shape[i].p,
         );
-        const { dF, dI, dB } = temp;
+        const {dF, dI, dB} = temp;
         this.dlayers[i - 1] = dI;
         //console.log(dI.length, dI);
 
@@ -353,7 +353,7 @@ class CNN {
         if (this.shape[i].daf)
           this.dlayers[i - 1] = matrixMultiply(
             this.dlayers[i - 1],
-            deepMap(this.layers[i - 1], (v) => this.shape[i].daf(v))
+            deepMap(this.layers[i - 1], v => this.shape[i].daf(v)),
           );
 
         //update weights
@@ -361,13 +361,13 @@ class CNN {
           this.weights[i] = update2Dmatrix(
             this.weights[i],
             dF,
-            this.learningRate
+            this.learningRate,
           );
 
         //update biases
         if (updateWeights)
           this.biases[i] = this.biases[i].map(
-            (b, i) => b + dB[i] * this.learningRate
+            (b, i) => b + dB[i] * this.learningRate,
           );
       } else if (this.shape[i].type == LayerType.POOL) {
         let dIn = new Array(this.shape[i - 1].d)
@@ -375,13 +375,13 @@ class CNN {
           .map(() =>
             new Array(this.shape[i - 1].h)
               .fill(0)
-              .map(() => new Array(this.shape[i - 1].w).fill(0))
+              .map(() => new Array(this.shape[i - 1].w).fill(0)),
           );
         let maxCoords = maxPool(
           this.layers[i - 1],
           this.shape[i].f,
           this.shape[i].s,
-          true
+          true,
         );
 
         for (let z = 0; z < this.shape[i].d; z++) {
@@ -398,11 +398,11 @@ class CNN {
         if (this.shape[i].daf)
           this.dlayers[i - 1] = matrixMultiply(
             this.dlayers[i - 1],
-            deepMap(this.layers[i - 1], (v) => this.shape[i].daf(v))
+            deepMap(this.layers[i - 1], v => this.shape[i].daf(v)),
           );
       }
 
-      deepMap(this.dlayers[i], (x) => {
+      deepMap(this.dlayers[i], x => {
         if (isNaN(x)) throw new Error(`[${i}] output ${x} after derivation`);
         return x;
       });
@@ -427,18 +427,18 @@ class CNN {
           this.dlayers[i],
           this.layers[i - 1],
           this.shape[i].s,
-          this.shape[i].p
+          this.shape[i].p,
         );
-        const { dF, dI, dB } = temp;
+        const {dF, dI, dB} = temp;
         this.weights[i] = update2Dmatrix(
           this.weights[i],
           dF,
-          this.learningRate
+          this.learningRate,
         );
 
         //update biases
         this.biases[i] = this.biases[i].map(
-          (b, i) => b + dB[i] * this.learningRate
+          (b, i) => b + dB[i] * this.learningRate,
         );
       }
     }
@@ -447,7 +447,7 @@ class CNN {
   static confirmShape(shape) {
     if (shape[0].type != LayerType.INPUT)
       throw new Error(
-        `the first layer isn't an input layer, instead is: ${shape[0].type}`
+        `the first layer isn't an input layer, instead is: ${shape[0].type}`,
       );
     for (let i = 1; i < shape.length; i++) {
       if (shape[i].type == LayerType.CONV) {
@@ -458,7 +458,7 @@ class CNN {
           throw new Error(
             `[${i}] CONV: outW doesn't equal to calculated outW expected: ${
               (shape[i - 1].w - shape[i].f + 2 * shape[i].p) / shape[i].s + 1
-            }, actual: ${shape[i].w}`
+            }, actual: ${shape[i].w}`,
           );
 
         if (
@@ -468,33 +468,33 @@ class CNN {
           throw new Error(
             `[${i}] CONV: outH doesn't equal to calculated outH expected: ${
               (shape[i - 1].h - shape[i].f + 2 * shape[i].p) / shape[i].s + 1
-            }, actual: ${shape[i].h}`
+            }, actual: ${shape[i].h}`,
           );
 
         if (shape[i].d != shape[i].k)
           throw new Error(
-            `[${i}] CONV: number of kernels doesn't equal outD kernels: ${shape[i].k}, outD: ${shape[i].d}`
+            `[${i}] CONV: number of kernels doesn't equal outD kernels: ${shape[i].k}, outD: ${shape[i].d}`,
           );
       } else if (shape[i].type == LayerType.POOL) {
         if (shape[i].w != (shape[i - 1].w - shape[i].f) / shape[i].s + 1)
           throw new Error(
             `[${i}] POOL: outW doesn't equal to calculated outW expected: ${
               (shape[i - 1].w - shape[i].f) / shape[i].s + 1
-            }, actual: ${shape[i].w}`
+            }, actual: ${shape[i].w}`,
           );
 
         if (shape[i].h != (shape[i - 1].h - shape[i].f) / shape[i].s + 1)
           throw new Error(
             `[${i}] POOL: outH doesn't equal to calculated outH expected: ${
               (shape[i - 1].h - shape[i].f) / shape[i].s + 1
-            }, actual: ${shape[i].h}`
+            }, actual: ${shape[i].h}`,
           );
 
         if (shape[i - 1].d != shape[i].d)
           throw new Error(
             `[${i}] POOL: outD doesn't equal inZ inZ: ${
               shape[i - 1].d
-            }, outD: ${shape[i].d}`
+            }, outD: ${shape[i].d}`,
           );
       } else if (shape[i].type == LayerType.FC) {
         if (
@@ -502,7 +502,7 @@ class CNN {
           shape[i - 1].type != LayerType.FLATTEN
         )
           throw new Error(
-            `[${i}] FC: The previous layer should be type FC or FLATTEN`
+            `[${i}] FC: The previous layer should be type FC or FLATTEN`,
           );
       } else if (shape[i].type == LayerType.FLATTEN) {
         if (
@@ -525,15 +525,15 @@ const LayerType = {
   FLATTEN: 4,
 };
 
-const sigm = (x) => 1 / (1 + Math.exp(-x));
+const sigm = x => 1 / (1 + Math.exp(-x));
 const ActivationFunction = {
-  RELU: (x) => (x > 0 ? x : 0),
-  DRELU: (x) => (x > 0 ? 1 : 0),
+  RELU: x => (x > 0 ? x : 0),
+  DRELU: x => (x > 0 ? 1 : 0),
   SIGMOID: sigm,
-  DSIGMOID: (x) => sigm(x) * (1 - sigm(x)),
-  DSIGMOIDWITHOUTSIGM: (x) => x * (1 - x),
+  DSIGMOID: x => sigm(x) * (1 - sigm(x)),
+  DSIGMOIDWITHOUTSIGM: x => x * (1 - x),
   TANH: Math.tanh,
-  DTANH: (x) => 1 - Math.pow(Math.tanh(x), 2),
+  DTANH: x => 1 - Math.pow(Math.tanh(x), 2),
 };
 
 const Layer = {
@@ -632,7 +632,7 @@ const NetworkArchitectures = {
       1,
       0,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.POOL(
       14,
@@ -641,7 +641,7 @@ const NetworkArchitectures = {
       2,
       2,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.CONV(
       10,
@@ -652,7 +652,7 @@ const NetworkArchitectures = {
       1,
       0,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.POOL(
       5,
@@ -661,7 +661,7 @@ const NetworkArchitectures = {
       2,
       2,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.CONV(
       1,
@@ -672,7 +672,7 @@ const NetworkArchitectures = {
       1,
       0,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.FLATTEN(1, 1, 120),
     new Layer.FC(84, ActivationFunction.TANH, ActivationFunction.DTANH),
@@ -689,7 +689,7 @@ const NetworkArchitectures = {
       1,
       0,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.POOL(
       14,
@@ -698,7 +698,7 @@ const NetworkArchitectures = {
       2,
       2,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.CONV(
       10,
@@ -709,7 +709,7 @@ const NetworkArchitectures = {
       1,
       0,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.POOL(
       5,
@@ -718,7 +718,7 @@ const NetworkArchitectures = {
       2,
       2,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.CONV(
       1,
@@ -729,7 +729,7 @@ const NetworkArchitectures = {
       1,
       0,
       ActivationFunction.TANH,
-      ActivationFunction.DTANH
+      ActivationFunction.DTANH,
     ),
     new Layer.FLATTEN(1, 1, 120),
     new Layer.FC(84, ActivationFunction.TANH, ActivationFunction.DTANH),

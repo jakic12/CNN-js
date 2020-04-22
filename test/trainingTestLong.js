@@ -11,13 +11,13 @@ const {
 } = require(`../datasetProcessor`);
 const fs = require(`fs`);
 
-const { expect } = require(`chai`);
+const {expect} = require(`chai`);
 
-const { softmax, maxIndex } = require(`../math`);
+const {softmax, maxIndex} = require(`../math`);
 
 const dataset = vectorizeDatasetLabels(
   openDatasetFromBuffer(fs.readFileSync(`test/data_batch_1.bin`)),
-  10
+  10,
 );
 
 describe(`training test`, () => {
@@ -38,7 +38,7 @@ describe(`training test`, () => {
         1,
         0,
         ActivationFunction.TANH,
-        ActivationFunction.DTANH
+        ActivationFunction.DTANH,
       ),
       new Layer.POOL(
         14,
@@ -47,7 +47,7 @@ describe(`training test`, () => {
         2,
         2,
         ActivationFunction.TANH,
-        ActivationFunction.DTANH
+        ActivationFunction.DTANH,
       ),
       new Layer.CONV(
         10,
@@ -58,7 +58,7 @@ describe(`training test`, () => {
         1,
         0,
         ActivationFunction.TANH,
-        ActivationFunction.DTANH
+        ActivationFunction.DTANH,
       ),
       new Layer.POOL(
         5,
@@ -67,7 +67,7 @@ describe(`training test`, () => {
         2,
         2,
         ActivationFunction.TANH,
-        ActivationFunction.DTANH
+        ActivationFunction.DTANH,
       ),
       new Layer.CONV(
         1,
@@ -78,7 +78,7 @@ describe(`training test`, () => {
         1,
         0,
         ActivationFunction.TANH,
-        ActivationFunction.DTANH
+        ActivationFunction.DTANH,
       ),
       new Layer.FLATTEN(1, 1, 120),
       //new Layer.FC(84, ActivationFunction.TANH, ActivationFunction.DTANH),
@@ -101,7 +101,7 @@ describe(`training test`, () => {
           err,
           `lr:`,
           learningRate,
-          `${accuracy * 100}%`
+          `${accuracy * 100}%`,
         );
       },
     });
@@ -113,7 +113,7 @@ describe(`training test`, () => {
       console.log(`normal`, netOut);
       console.log(
         `softmax`,
-        softmax(netOut).map((x) => Math.round(x * 100) / 100)
+        softmax(netOut).map(x => Math.round(x * 100) / 100),
       );
       console.log(`expected`, trainingSet[index].output);
       expect([index, maxIndex(netOut)]).to.eql([
@@ -130,14 +130,14 @@ describe(`training test`, () => {
       console.log(`normal`, netOut);
       console.log(
         `softmax`,
-        softmax(netOut).map((x) => Math.round(x * 100) / 100)
+        softmax(netOut).map(x => Math.round(x * 100) / 100),
       );
       console.log(`expected`, testSet[index].output);
       console.log(
         `prediction`,
         index,
         maxIndex(netOut),
-        maxIndex(testSet[index].output)
+        maxIndex(testSet[index].output),
       );
       if (maxIndex(netOut) === maxIndex(testSet[index].output)) {
         good++;

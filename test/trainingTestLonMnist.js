@@ -5,9 +5,9 @@ const {
   NetworkArchitectures,
 } = require(`../cnn`);
 
-const { expect } = require(`chai`);
+const {expect} = require(`chai`);
 
-const { softmax, maxIndex } = require(`../math`);
+const {softmax, maxIndex} = require(`../math`);
 
 var mnist = require("mnist");
 
@@ -18,7 +18,7 @@ describe(`mnist training test`, () => {
     const trainingSet = set.training;
     const testSet = set.test;
 
-    const trainingSetInputs = trainingSet.map((example) => [
+    const trainingSetInputs = trainingSet.map(example => [
       new Array(32).fill(0).map((_, i) =>
         new Array(32).fill(0).map((_, j) => {
           if (i < 28 && j < 28) {
@@ -26,7 +26,7 @@ describe(`mnist training test`, () => {
           } else {
             return 0;
           }
-        })
+        }),
       ),
     ]);
 
@@ -34,7 +34,7 @@ describe(`mnist training test`, () => {
       t.input = trainingSetInputs[i];
     });
 
-    const testSetInputs = testSet.map((example) => [
+    const testSetInputs = testSet.map(example => [
       new Array(32).fill(0).map((_, i) =>
         new Array(32).fill(0).map((_, j) => {
           if (i < 28 && j < 28) {
@@ -42,7 +42,7 @@ describe(`mnist training test`, () => {
           } else {
             return 0;
           }
-        })
+        }),
       ),
     ]);
 
@@ -124,7 +124,7 @@ describe(`mnist training test`, () => {
       console.log(`normal`, netOut);
       console.log(
         `softmax`,
-        softmax(netOut).map((x) => Math.round(x * 100) / 100)
+        softmax(netOut).map(x => Math.round(x * 100) / 100),
       );
       console.log(`expected`, trainingSet[index].output);
       /*expect([index, maxIndex(netOut)]).to.eql([
@@ -141,14 +141,14 @@ describe(`mnist training test`, () => {
       console.log(`normal`, netOut);
       console.log(
         `softmax`,
-        softmax(netOut).map((x) => Math.round(x * 100) / 100)
+        softmax(netOut).map(x => Math.round(x * 100) / 100),
       );
       console.log(`expected`, testSet[index].output);
       console.log(
         `prediction`,
         index,
         maxIndex(netOut),
-        maxIndex(testSet[index].output)
+        maxIndex(testSet[index].output),
       );
       if (maxIndex(netOut) === maxIndex(testSet[index].output)) {
         good++;

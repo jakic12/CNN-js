@@ -1,5 +1,5 @@
 const GPU = require("gpu.js").GPU;
-const gpuSettings = { mode: `cpu` };
+const gpuSettings = {mode: `cpu`};
 
 const max = a => {
   let max = -Infinity;
@@ -81,17 +81,17 @@ const matrixDot = (a, b) => {
   const gpu = new GPU(gpuSettings);
   if (a[0].length != b.length)
     throw new Error(
-      `invalid dimensions a -> x (${a[0].length}) should equal b -> y (${b.length})`
+      `invalid dimensions a -> x (${a[0].length}) should equal b -> y (${b.length})`,
     );
   return gpu
-    .createKernel(function(a1, b1) {
+    .createKernel(function (a1, b1) {
       let sum = 0;
       for (let i = 0; i < this.constants.aWidth; i++) {
         sum += a1[this.thread.y][i] * b1[i][this.thread.x];
       }
       return sum;
     })
-    .setConstants({ aWidth: a[0].length })
+    .setConstants({aWidth: a[0].length})
     .setOutput([b[0].length, a.length])(a, b);
 };
 
@@ -104,11 +104,11 @@ const matrixMultiply = (a, b) => {
       a[0][0].length != b[0][0].length
     )
       throw new Error(
-        `invalid dimensions, both arrays should have equal shape`
+        `invalid dimensions, both arrays should have equal shape`,
       );
 
     return gpu
-      .createKernel(function(a1, b1) {
+      .createKernel(function (a1, b1) {
         return (
           a1[this.thread.z][this.thread.y][this.thread.x] *
           b1[this.thread.z][this.thread.y][this.thread.x]
@@ -118,11 +118,11 @@ const matrixMultiply = (a, b) => {
   } else if (getDimension(a) == 2 && getDimension(b) == 2) {
     if (a.length != b.length || a[0].length != b[0].length)
       throw new Error(
-        `invalid dimensions, both arrays should have equal shape`
+        `invalid dimensions, both arrays should have equal shape`,
       );
 
     return gpu
-      .createKernel(function(a1, b1) {
+      .createKernel(function (a1, b1) {
         return (
           a1[this.thread.y][this.thread.x] * b1[this.thread.y][this.thread.x]
         );
@@ -131,11 +131,11 @@ const matrixMultiply = (a, b) => {
   } else if (getDimension(a) == 1 && getDimension(b) == 1) {
     if (a.length != b.length)
       throw new Error(
-        `invalid dimensions, both arrays should have equal shape`
+        `invalid dimensions, both arrays should have equal shape`,
       );
 
     return gpu
-      .createKernel(function(a1, b1) {
+      .createKernel(function (a1, b1) {
         return a1[this.thread.x] * b1[this.thread.x];
       })
       .setOutput([a.length])(a, b);
@@ -153,11 +153,11 @@ const matrixAdd = (a, b) => {
       a[0][0].length != b[0][0].length
     )
       throw new Error(
-        `invalid dimensions, both arrays should have equal shape`
+        `invalid dimensions, both arrays should have equal shape`,
       );
 
     return gpu
-      .createKernel(function(a1, b1) {
+      .createKernel(function (a1, b1) {
         return (
           a1[this.thread.z][this.thread.y][this.thread.x] +
           b1[this.thread.z][this.thread.y][this.thread.x]
@@ -167,11 +167,11 @@ const matrixAdd = (a, b) => {
   } else if (getDimension(a) == 2 && getDimension(b) == 2) {
     if (a.length != b.length || a[0].length != b[0].length)
       throw new Error(
-        `invalid dimensions, both arrays should have equal shape`
+        `invalid dimensions, both arrays should have equal shape`,
       );
 
     return gpu
-      .createKernel(function(a1, b1) {
+      .createKernel(function (a1, b1) {
         return (
           a1[this.thread.y][this.thread.x] + b1[this.thread.y][this.thread.x]
         );
@@ -180,17 +180,17 @@ const matrixAdd = (a, b) => {
   } else if (getDimension(a) == 1 && getDimension(b) == 1) {
     if (a.length != b.length)
       throw new Error(
-        `invalid dimensions, both arrays should have equal shape`
+        `invalid dimensions, both arrays should have equal shape`,
       );
 
     return gpu
-      .createKernel(function(a1, b1) {
+      .createKernel(function (a1, b1) {
         return a1[this.thread.x] + b1[this.thread.x];
       })
       .setOutput([a.length])(a, b);
   } else {
     throw new Error(
-      `invalid array dimension a:${getDimension(a)}, b:${getDimension(b)}`
+      `invalid array dimension a:${getDimension(a)}, b:${getDimension(b)}`,
     );
   }
 };
@@ -205,7 +205,7 @@ const transpose = a => {
   let d = [a.length, a[0].length || 1];
 
   return gpu
-    .createKernel(function(a1) {
+    .createKernel(function (a1) {
       return a1[this.thread.x][this.thread.y];
     })
     .setOutput(d)(a);
@@ -221,13 +221,13 @@ const doubleInverse = a => {
 
     return new Array(outW).fill(0).map((_, w) =>
       gpu
-        .createKernel(function(a1) {
+        .createKernel(function (a1) {
           return a1[
             this.thread.z
           ][this.constants.outY - this.thread.y - 1][this.constants.outX - this.thread.x - 1];
         })
-        .setConstants({ outX, outY })
-        .setOutput([outX, outY, outZ])(a[w])
+        .setConstants({outX, outY})
+        .setOutput([outX, outY, outZ])(a[w]),
     );
   } else if (getDimension(a) == 3) {
     let outZ = a.length;
@@ -235,33 +235,33 @@ const doubleInverse = a => {
     let outX = a[0][0].length;
 
     return gpu
-      .createKernel(function(a1) {
+      .createKernel(function (a1) {
         return a1[
           this.thread.z
         ][this.constants.outY - this.thread.y - 1][this.constants.outX - this.thread.x - 1];
       })
-      .setConstants({ outX, outY })
+      .setConstants({outX, outY})
       .setOutput([outX, outY, outZ])(a);
   } else if (getDimension(a) == 2) {
     let outY = a.length;
     let outX = a[0].length;
 
     return gpu
-      .createKernel(function(a1) {
+      .createKernel(function (a1) {
         return a1[
           this.constants.outY - this.thread.y - 1
         ][this.constants.outX - this.thread.x - 1];
       })
-      .setConstants({ outX, outY })
+      .setConstants({outX, outY})
       .setOutput([outX, outY])(a);
   } else if (getDimension(a) == 1) {
     let outX = a.length;
 
     return gpu
-      .createKernel(function(a1) {
+      .createKernel(function (a1) {
         return a1[this.constants.outX - this.thread.x - 1];
       })
-      .setConstants({ outX })
+      .setConstants({outX})
       .setOutput([outX])(a);
   } else {
     throw new Error(`invalid array dimension`);
@@ -293,7 +293,7 @@ const correlate = (a, f, s = 1, p = 0, b = null) => {
 
     return new Array(outZ).fill(0).map((_, Tz) =>
       gpu
-        .createKernel(function(a1, f1, b1) {
+        .createKernel(function (a1, f1, b1) {
           let sum = b1;
 
           for (let z = 0; z < this.constants.fZ; z++)
@@ -322,13 +322,13 @@ const correlate = (a, f, s = 1, p = 0, b = null) => {
           p, //padding
           fY: f[0][0].length, //filter y size
           fX: f[0][0][0].length, //filter x size
-          fZ: f[0].length //filter z size
+          fZ: f[0].length, //filter z size
         })
-        .setOutput([outX, outY])(a, f[Tz], b ? b[Tz] : 0)
+        .setOutput([outX, outY])(a, f[Tz], b ? b[Tz] : 0),
     );
   } else {
     throw new Error(
-      `invalid array dimension (${getDimension(a)}, ${getDimension(f)})`
+      `invalid array dimension (${getDimension(a)}, ${getDimension(f)})`,
     );
   }
 };
@@ -524,11 +524,11 @@ const backPropagateCorrelation = (f, dOut, input, s, p) => {
     return {
       dF,
       dI,
-      dB
+      dB,
     };
   } else {
     throw new Error(
-      `invalid array dimension (${getDimension(input)}, ${getDimension(f)})`
+      `invalid array dimension (${getDimension(input)}, ${getDimension(f)})`,
     );
   }
 };
@@ -569,12 +569,12 @@ const maxPool = (a, f, s, coordinateMode = false) => {
               }
             }
             return outCoords;
-          })
-        )
+          }),
+        ),
       );
     } else {
       return gpu
-        .createKernel(function(a1) {
+        .createKernel(function (a1) {
           let first = true;
           let max = 0;
           for (let y = 0; y < this.constants.f; y++)
@@ -589,7 +589,7 @@ const maxPool = (a, f, s, coordinateMode = false) => {
             }
           return max;
         })
-        .setConstants({ f, s })
+        .setConstants({f, s})
         .setOutput([outX, outY, outZ])(a);
     }
   } else {
@@ -614,14 +614,14 @@ const update2Dmatrix = (a, dA, c) => {
       throw new Error(`Matrix sizes don't match`);
 
     return gpu
-      .createKernel(function(a1, dA1) {
+      .createKernel(function (a1, dA1) {
         return (
           a1[this.thread.y][this.thread.x] +
           dA1[this.thread.y][this.thread.x] * this.constants.coefficient
         );
       })
       .setConstants({
-        coefficient: c
+        coefficient: c,
       })
       .setOutput([a[0].length, a.length])(a, dA);
   } else {
@@ -632,7 +632,7 @@ const update2Dmatrix = (a, dA, c) => {
 const flattenDeep = arr1 =>
   arr1.reduce(
     (acc, val) => (val.length ? acc.concat(flattenDeep(val)) : acc.concat(val)),
-    []
+    [],
   );
 
 class debugGpu {
@@ -654,12 +654,12 @@ class debugGpu {
               if (this.constants[key].length) {
                 strF = strF.replace(
                   new RegExp(`this.constants.${key}`, "g"),
-                  `[${this.constants[key]}]`
+                  `[${this.constants[key]}]`,
                 );
               } else {
                 strF = strF.replace(
                   new RegExp(`this.constants.${key}`, "g"),
-                  this.constants[key]
+                  this.constants[key],
                 );
               }
             }
@@ -667,8 +667,8 @@ class debugGpu {
             // console.log(strFunction)
             let test = eval(strFunction);
             return test;
-          })
-        )
+          }),
+        ),
       );
     } else if (this.outY) {
       return new Array(this.outY).fill(0).map((_, y) =>
@@ -681,12 +681,12 @@ class debugGpu {
             if (this.constants[key].length) {
               strF = strF.replace(
                 new RegExp(`this.constants.${key}`, "g"),
-                `[${this.constants[key]}]`
+                `[${this.constants[key]}]`,
               );
             } else {
               strF = strF.replace(
                 new RegExp(`this.constants.${key}`, "g"),
-                this.constants[key]
+                this.constants[key],
               );
             }
           }
@@ -694,7 +694,7 @@ class debugGpu {
           // console.log(strFunction)
           let test = eval(strFunction);
           return test;
-        })
+        }),
       );
     } else {
     }
@@ -743,5 +743,5 @@ module.exports = {
   max,
   sum,
   softmax,
-  maxIndex
+  maxIndex,
 };
