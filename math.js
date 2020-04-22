@@ -460,6 +460,13 @@ const vectorize = (label, length) => {
   return outArr;
 };
 
+/**
+ * Creates an array with the same shape but all the values are 0
+ * @param {Array} arr
+ */
+const deepCopyArrayShape = (arr) =>
+  arr.map((i) => (i instanceof Array ? deepCopyArrayShape(i) : 0));
+
 module.exports = {
   matrixMultiply,
   matrixDot,
@@ -480,4 +487,5 @@ module.exports = {
   maxIndex,
   deepNormalize,
   vectorize,
+  deepCopyArrayShape,
 };

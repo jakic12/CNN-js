@@ -17,6 +17,7 @@ var {
   softmax,
   maxIndex,
   vectorize,
+  deepCopyArrayShape,
 } = require("../math");
 
 describe("Basic math functions", () => {
@@ -764,5 +765,24 @@ describe("Basic math functions", () => {
     expect(vectorize(2, 3)).to.deep.equal([0, 0, 1]);
     expect(vectorize(1, 10)).to.deep.equal([0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
     expect(vectorize(3, 10)).to.deep.equal([0, 0, 0, 1, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it(`deepCopyArrayShape`, () => {
+    expect(deepCopyArrayShape([[1, 2, 3], 2, -1])).to.deep.equal([
+      [0, 0, 0],
+      0,
+      0,
+    ]);
+    expect(
+      deepCopyArrayShape([
+        [[1], 2, 3],
+        [1, 2],
+        [3, [3]],
+      ])
+    ).to.deep.equal([
+      [[0], 0, 0],
+      [0, 0],
+      [0, [0]],
+    ]);
   });
 });
