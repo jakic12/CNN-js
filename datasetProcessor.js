@@ -1,4 +1,4 @@
-const { vectorize } = require(`./math`);
+const { vectorize, deepNormalize } = require(`./math`);
 
 const openDatasetFromBuffer = (buffer, imageColorDepth = 3, imageSize = 32) => {
   const datasetArray = new Uint8Array(buffer);
@@ -80,10 +80,18 @@ const datasetToUint8Array = (dataset) => {
   return out;
 };
 
+const normalizeInputData = (dataset, max) => {
+  dataset.forEach((data, i) => {
+    dataset[i].input = deepNormalize(dataset[i].input, max);
+  });
+  return dataset;
+};
+
 module.exports = {
   openDatasetFromBuffer,
   datasetToUint8Array,
   vectorizeDatasetLabels,
   stringToUint8Array,
   uint8ArrayToString,
+  normalizeInputData,
 };

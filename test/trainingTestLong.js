@@ -8,6 +8,7 @@ const {
 const {
   openDatasetFromBuffer,
   vectorizeDatasetLabels,
+  normalizeInputData,
 } = require(`../datasetProcessor`);
 const fs = require(`fs`);
 
@@ -15,17 +16,18 @@ const { expect } = require(`chai`);
 
 const { softmax, maxIndex } = require(`../math`);
 
-const dataset = vectorizeDatasetLabels(
-  openDatasetFromBuffer(fs.readFileSync(`test/data_batch_1.bin`)),
-  10
-);
-
 describe(`training test`, () => {
   it(`should train the network`, function () {
     this.timeout(0);
+    const dataset = normalizeInputData(
+      vectorizeDatasetLabels(
+        openDatasetFromBuffer(fs.readFileSync(`test/data_batch_1.bin`)),
+        10
+      )
+    );
 
-    let trainingSet = dataset.filter((_e, i) => i < 100);
-    let testSet = dataset.filter((_e, i) => i < 200 && i > 190);
+    let trainingSet = dataset.filter((_e, i) => i < 300);
+    let testSet = dataset.filter((_e, i) => i < 400 && i > 300);
 
     let cnn = new CNN([
       new Layer.INPUT(32, 32, 3),
@@ -89,7 +91,7 @@ describe(`training test`, () => {
 
     cnn.sgd({
       learningRate: -0.01,
-      epochs: 100,
+      epochs: 700,
       decay: 0.005,
       dataset: trainingSet,
       onProgress: (epoch, accuracy, err, learningRate) => {
@@ -123,7 +125,7 @@ describe(`training test`, () => {
     });
 
     console.log(`Test set:`);
-    const all = trainingSet.length;
+    const all = testSet.length;
     let good = 0;
     testSet.map((i, index) => {
       const netOut = cnn.forwardPropagate(i.input);
