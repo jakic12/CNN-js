@@ -17,6 +17,16 @@ var {
   maxIndex,
 } = require("./math");
 
+const sigm = x => 1 / (1 + Math.exp(-x));
+const ActivationFunctions = {
+  RELU: {norm: x => (x > 0 ? x : 0), derivative: x => (x > 0 ? 1 : 0)},
+  SIGMOID: {
+    norm: sigm,
+    derivative: x => sigm(x) * (1 - sigm(x)), //x => x * (1 - x) /*dSigmoidWithoutSigmoid*/,
+  },
+  TANH: {norm: Math.tanh, derivative: x => 1 - Math.pow(Math.tanh(x), 2)},
+};
+
 /**
  * Convolutional neural network, recieves a shape, give it data, train in and save it
  */
@@ -29,7 +39,7 @@ class CNN {
   constructor(shape) {
     if (shape.shape) {
       CNN.confirmShape(shape.shape);
-      this.shape = shape.shape;
+      this.shape = CNN.applyActivationFunctionToShape(shape.shape);
 
       this.errorF = (expected, actual) => Math.pow(actual - expected, 2) / 2;
       this.dErrorF = (expected, actual) => actual - expected;
@@ -42,7 +52,7 @@ class CNN {
       this.biases = shape.biases;
     } else {
       CNN.confirmShape(shape);
-      this.shape = shape;
+      this.shape = CNN.applyActivationFunctionToShape(shape);
 
       const xavier = (fan_in, fan_out) =>
         Math.random() * Math.sqrt(6 / (fan_in + fan_out));
@@ -120,6 +130,23 @@ class CNN {
         }
       });
     }
+  }
+
+  static applyActivationFunctionToShape(shape) {
+    return shape.map(s =>
+      s.af
+        ? Object.assign(s, {
+            af: ActivationFunctions[s.af].norm,
+            daf: ActivationFunctions[s.af].derivative,
+          })
+        : s,
+    );
+  }
+
+  serialize() {
+    return JSON.stringify(
+      Object.assign({}, this, {shape: this.shape.map(s => {})}),
+    );
   }
 
   sgd({
@@ -525,15 +552,10 @@ const LayerType = {
   FLATTEN: 4,
 };
 
-const sigm = x => 1 / (1 + Math.exp(-x));
 const ActivationFunction = {
-  RELU: x => (x > 0 ? x : 0),
-  DRELU: x => (x > 0 ? 1 : 0),
-  SIGMOID: sigm,
-  DSIGMOID: x => sigm(x) * (1 - sigm(x)),
-  DSIGMOIDWITHOUTSIGM: x => x * (1 - x),
-  TANH: Math.tanh,
-  DTANH: x => 1 - Math.pow(Math.tanh(x), 2),
+  RELU: `RELU`,
+  SIGMOID: `SIGMOID`,
+  TANH: `TANH`,
 };
 
 const Layer = {
@@ -559,9 +581,8 @@ const Layer = {
    * @param {Number} s stride
    * @param {Number} p zero padding
    * @param {function(Number):Number} af activation function
-   * @param {function(Number):Number} daf derivative of the activation function
    */
-  CONV: function (w, h, d, f, k, s, p, af, daf) {
+  CONV: function (w, h, d, f, k, s, p, af) {
     this.type = LayerType.CONV;
     this.w = w;
     this.h = h;
@@ -571,7 +592,6 @@ const Layer = {
     this.s = s;
     this.p = p;
     this.af = af;
-    this.daf = daf;
   },
   /**
    * Pooling layer hyperparameters
@@ -581,9 +601,8 @@ const Layer = {
    * @param {Number} f filter size
    * @param {Number} s stride
    * @param {function(Number):Number} af activation function
-   * @param {function(Number):Number} daf derivative of the activation function
    */
-  POOL: function (w, h, d, f, s, af, daf) {
+  POOL: function (w, h, d, f, s, af) {
     this.type = LayerType.POOL;
     this.w = w;
     this.h = h;
@@ -591,19 +610,16 @@ const Layer = {
     this.f = f;
     this.s = s;
     this.af = af;
-    this.daf = daf;
   },
   /**
    * A fully connected layer
    * @param {Number} l length of the layer
    * @param {function(Number):Number} af activation function
-   * @param {function(Number):Number} daf derivative of the activation function
    */
-  FC: function (l, af, daf) {
+  FC: function (l, af) {
     this.type = LayerType.FC;
     this.l = l;
     this.af = af;
-    this.daf = daf;
   },
   /**
    * Convert a convolutional layerr to a fully connected layer
@@ -623,117 +639,25 @@ const Layer = {
 const NetworkArchitectures = {
   LeNet5: [
     new Layer.INPUT(32, 32, 1),
-    new Layer.CONV(
-      28,
-      28,
-      6,
-      5,
-      6,
-      1,
-      0,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.POOL(
-      14,
-      14,
-      6,
-      2,
-      2,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.CONV(
-      10,
-      10,
-      16,
-      5,
-      16,
-      1,
-      0,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.POOL(
-      5,
-      5,
-      16,
-      2,
-      2,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.CONV(
-      1,
-      1,
-      120,
-      5,
-      120,
-      1,
-      0,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
+    new Layer.CONV(28, 28, 6, 5, 6, 1, 0, ActivationFunction.TANH),
+    new Layer.POOL(14, 14, 6, 2, 2, ActivationFunction.TANH),
+    new Layer.CONV(10, 10, 16, 5, 16, 1, 0, ActivationFunction.TANH),
+    new Layer.POOL(5, 5, 16, 2, 2, ActivationFunction.TANH),
+    new Layer.CONV(1, 1, 120, 5, 120, 1, 0, ActivationFunction.TANH),
     new Layer.FLATTEN(1, 1, 120),
-    new Layer.FC(84, ActivationFunction.TANH, ActivationFunction.DTANH),
-    new Layer.FC(10, ActivationFunction.TANH, ActivationFunction.DTANH),
+    new Layer.FC(84, ActivationFunction.TANH),
+    new Layer.FC(10, ActivationFunction.TANH),
   ],
   LeNet5Color: [
     new Layer.INPUT(32, 32, 3),
-    new Layer.CONV(
-      28,
-      28,
-      6,
-      5,
-      6,
-      1,
-      0,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.POOL(
-      14,
-      14,
-      6,
-      2,
-      2,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.CONV(
-      10,
-      10,
-      16,
-      5,
-      16,
-      1,
-      0,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.POOL(
-      5,
-      5,
-      16,
-      2,
-      2,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
-    new Layer.CONV(
-      1,
-      1,
-      120,
-      5,
-      120,
-      1,
-      0,
-      ActivationFunction.TANH,
-      ActivationFunction.DTANH,
-    ),
+    new Layer.CONV(28, 28, 6, 5, 6, 1, 0, ActivationFunction.TANH),
+    new Layer.POOL(14, 14, 6, 2, 2, ActivationFunction.TANH),
+    new Layer.CONV(10, 10, 16, 5, 16, 1, 0, ActivationFunction.TANH),
+    new Layer.POOL(5, 5, 16, 2, 2, ActivationFunction.TANH),
+    new Layer.CONV(1, 1, 120, 5, 120, 1, 0, ActivationFunction.TANH),
     new Layer.FLATTEN(1, 1, 120),
-    new Layer.FC(84, ActivationFunction.TANH, ActivationFunction.DTANH),
-    new Layer.FC(10, ActivationFunction.TANH, ActivationFunction.DTANH),
+    new Layer.FC(84, ActivationFunction.TANH),
+    new Layer.FC(10, ActivationFunction.TANH),
   ],
 };
 
