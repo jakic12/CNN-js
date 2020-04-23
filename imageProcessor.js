@@ -10,7 +10,7 @@ const Jimp = require("jimp");
 const imageToArray = (imageData, sizeDim) =>
   new Promise((resolve, reject) => {
     Jimp.read(imageData)
-      .then((image) => {
+      .then(image => {
         let resizedImage = resizeImage(image, sizeDim);
 
         let out;
@@ -41,7 +41,7 @@ const imageToArray = (imageData, sizeDim) =>
 
         resolve(out);
       })
-      .catch((e) => reject(e));
+      .catch(e => reject(e));
   });
 
 /**
@@ -62,10 +62,10 @@ const arrayToImage = (array, writeTo) => {
                   array[0][y][x],
                   array[0][y][x],
                   array[0][y][x],
-                  1
+                  1,
                 ),
                 x,
-                y
+                y,
               );
             } else {
               image.setPixelColor(
@@ -73,10 +73,10 @@ const arrayToImage = (array, writeTo) => {
                   array[0][y][x],
                   array[1][y][x],
                   array[2][y][x],
-                  1
+                  1,
                 ),
                 x,
-                y
+                y,
               );
             }
           }
@@ -84,12 +84,12 @@ const arrayToImage = (array, writeTo) => {
 
         if (writeTo) {
           image.write(writeTo, () =>
-            image.getBuffer(Jimp.AUTO, (b) => resolve(b))
+            image.getBuffer(Jimp.AUTO, b => resolve(b)),
           );
         } else {
-          image.getBuffer(Jimp.AUTO, (b) => resolve(b));
+          image.getBuffer(Jimp.AUTO, b => resolve(b));
         }
-      })
+      }),
   );
 };
 
@@ -98,12 +98,12 @@ const resizeImage = (image, sizeDim) => {
     if (sizeDim.z === 1) {
       return resizeImage(
         image.greyscale(),
-        Object.assign({}, sizeDim, { z: undefined })
+        Object.assign({}, sizeDim, {z: undefined}),
       );
     } else {
       return resizeImage(
         image.greyscale(),
-        Object.assign({}, sizeDim, { z: undefined })
+        Object.assign({}, sizeDim, {z: undefined}),
       );
     }
   } else {

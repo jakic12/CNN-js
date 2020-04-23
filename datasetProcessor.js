@@ -33,17 +33,17 @@ const openDatasetFromBuffer = (buffer, imageColorDepth = 3, imageSize = 32) => {
 };
 
 const vectorizeDatasetLabels = (dataset, outLength) => {
-  dataset.forEach((c) => {
+  dataset.forEach(c => {
     c.output = vectorize(c.label, outLength);
   });
   return dataset;
 };
 
-const uint8ArrayToString = (buf) => {
+const uint8ArrayToString = buf => {
   return String.fromCharCode.apply(null, new Uint8Array(buf));
 };
 
-const stringToUint8Array = (str) => {
+const stringToUint8Array = str => {
   var buf = new ArrayBuffer(str.length);
   var bufView = new Uint8Array(buf);
   for (var i = 0, strLen = str.length; i < strLen; i++) {
@@ -52,7 +52,7 @@ const stringToUint8Array = (str) => {
   return bufView;
 };
 
-const datasetToUint8Array = (dataset) => {
+const datasetToUint8Array = dataset => {
   const imageSize = dataset[0].input[0].length;
   const imageColorDepth = dataset[0].input.length;
   const imageChannelPixelCount = imageSize * imageSize;

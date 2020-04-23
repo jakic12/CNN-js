@@ -1,4 +1,4 @@
-const { expect } = require(`chai`);
+const {expect} = require(`chai`);
 var {
   matrixMultiply,
   matrixDot,
@@ -17,6 +17,7 @@ var {
   softmax,
   maxIndex,
   vectorize,
+  deepCopyArrayShape,
 } = require("../math");
 
 describe("Basic math functions", () => {
@@ -33,8 +34,8 @@ describe("Basic math functions", () => {
             [3, 2, 1],
           ],
         ],
-        (v) => v + 1
-      )
+        v => v + 1,
+      ),
     ).to.eql([
       [
         [2, 3, 4],
@@ -99,8 +100,8 @@ describe("Basic math functions", () => {
             [6, 8],
             [9, 7],
             [7, 6],
-          ]
-        )
+          ],
+        ),
       ).to.eql([
         [55, 66],
         [63, 89],
@@ -116,7 +117,7 @@ describe("Basic math functions", () => {
       transpose([
         [11, 12, 13, 14],
         [21, 22, 23, 24],
-      ])
+      ]),
     ).to.eql([
       [11, 21],
       [12, 22],
@@ -139,8 +140,8 @@ describe("Basic math functions", () => {
           [2, 3, 0, 0],
           [0, 0, 0, 0],
           [1, 2, 0, 0],
-        ]
-      )
+        ],
+      ),
     ).to.eql([
       [0, 0, 0, 4],
       [6, 6, 0, 0],
@@ -157,8 +158,8 @@ describe("Basic math functions", () => {
         [
           [0, 0, 0, 2, 0, 1, 0],
           [0, 1, 0, 0, 2, 0, 0],
-        ]
-      )
+        ],
+      ),
     ).to.eql([
       [0, 0, 0, 8, 0, 6, 0],
       [0, 4, 0, 0, 10, 0, 0],
@@ -189,8 +190,8 @@ describe("Basic math functions", () => {
             [0, 1, 0, 0],
             [0, 0, 0, 1],
           ],
-        ]
-      )
+        ],
+      ),
     ).to.eql([
       [
         [0, 0, 3, 0],
@@ -213,7 +214,7 @@ describe("Basic math functions", () => {
         [
           [1, 2],
           [1, 2],
-        ]
+        ],
       );
     }).to.throw();
   });
@@ -232,8 +233,8 @@ describe("Basic math functions", () => {
           [4, 3, 2],
           [1, 1, 1],
           [0, 0, 1],
-        ]
-      )
+        ],
+      ),
     ).to.eql([
       [5, 5, 5],
       [1, 1, 1],
@@ -255,8 +256,8 @@ describe("Basic math functions", () => {
             [1, 1, 1],
             [0, 0, 1],
           ],
-        ]
-      )
+        ],
+      ),
     ).to.eql([
       [
         [5, 5, 5],
@@ -279,7 +280,7 @@ describe("Basic math functions", () => {
           [2, 2, 3, 4],
           [5, 2, 3, 4],
         ],
-      ])
+      ]),
     ).to.eql([
       [
         [4, 3, 2, 5],
@@ -298,7 +299,7 @@ describe("Basic math functions", () => {
         [1, 3, 2, 4],
         [2, 2, 3, 4],
         [5, 2, 3, 4],
-      ])
+      ]),
     ).to.eql([
       [4, 3, 2, 5],
       [4, 3, 2, 2],
@@ -317,7 +318,7 @@ describe("Basic math functions", () => {
           [4, 3, 2, 2],
           [4, 2, 3, 1],
         ],
-      ])
+      ]),
     ).to.eql([
       [
         [4, 3, 2, 5],
@@ -354,8 +355,8 @@ describe("Basic math functions", () => {
           ],
         ],
         1,
-        1
-      )
+        1,
+      ),
     ).to.eql([
       [
         [-13, -20, -17],
@@ -383,8 +384,8 @@ describe("Basic math functions", () => {
           ],
         ],
         1,
-        1
-      )
+        1,
+      ),
     ).to.eql([
       [
         [0, -2, -2, 2, -1],
@@ -412,8 +413,8 @@ describe("Basic math functions", () => {
           ],
         ],
         2,
-        1
-      )
+        1,
+      ),
     ).to.eql([
       [
         [0, 1],
@@ -442,8 +443,8 @@ describe("Basic math functions", () => {
           ],
         ],
         1,
-        1
-      )
+        1,
+      ),
     ).to.eql([
       [
         [-13, -20, -17],
@@ -471,8 +472,8 @@ describe("Basic math functions", () => {
           ],
         ],
         1,
-        1
-      )
+        1,
+      ),
     ).to.eql([
       [
         [0, -2, -2, 2, -1],
@@ -500,8 +501,8 @@ describe("Basic math functions", () => {
           ],
         ],
         2,
-        1
-      )
+        1,
+      ),
     ).to.eql([
       [
         [0, 1],
@@ -572,8 +573,8 @@ describe("Basic math functions", () => {
         ],
         2,
         1,
-        [1, 0]
-      )
+        [1, 0],
+      ),
     ).to.eql([
       [
         [-5, -2, 1],
@@ -600,8 +601,8 @@ describe("Basic math functions", () => {
           ],
         ],
         2,
-        2
-      )
+        2,
+      ),
     ).to.eql([
       [
         [6, 8],
@@ -620,8 +621,8 @@ describe("Basic math functions", () => {
           ],
         ],
         2,
-        2
-      )
+        2,
+      ),
     ).to.eql([
       [
         [-1, -2],
@@ -643,17 +644,17 @@ describe("Basic math functions", () => {
         ],
         2,
         2,
-        true
-      )
+        true,
+      ),
     ).to.eql([
       [
         [
-          { x: 1, y: 1 },
-          { x: 3, y: 1 },
+          {x: 1, y: 1},
+          {x: 3, y: 1},
         ],
         [
-          { x: 0, y: 2 },
-          { x: 3, y: 3 },
+          {x: 0, y: 2},
+          {x: 3, y: 3},
         ],
       ],
     ]);
@@ -670,8 +671,8 @@ describe("Basic math functions", () => {
           [2, 2, 2],
           [2, 2, 2],
         ],
-        0.25
-      )
+        0.25,
+      ),
     ).to.eql([
       [1.5, 1.5, 1.5],
       [1.5, 1.5, 1.5],
@@ -699,8 +700,8 @@ describe("Basic math functions", () => {
             [2, 2, 2],
           ],
         ],
-        0.25
-      )
+        0.25,
+      ),
     ).to.eql([
       [
         [1.5, 1.5, 1.5],
@@ -735,7 +736,7 @@ describe("Basic math functions", () => {
       max([
         [1, 2, 4],
         [1, 2, [3, 5], [2, 3, [6, 2]]],
-      ])
+      ]),
     ).to.eql(6);
   });
 
@@ -748,10 +749,10 @@ describe("Basic math functions", () => {
           softmax(
             new Array(parseInt(Math.random() * 10))
               .fill(0)
-              .map(() => Math.random() * 3)
-          )
-        ) * 1000
-      ) / 1000
+              .map(() => Math.random() * 3),
+          ),
+        ) * 1000,
+      ) / 1000,
     ).to.eql(1);
   });
 
@@ -764,5 +765,24 @@ describe("Basic math functions", () => {
     expect(vectorize(2, 3)).to.deep.equal([0, 0, 1]);
     expect(vectorize(1, 10)).to.deep.equal([0, 1, 0, 0, 0, 0, 0, 0, 0, 0]);
     expect(vectorize(3, 10)).to.deep.equal([0, 0, 0, 1, 0, 0, 0, 0, 0, 0]);
+  });
+
+  it(`deepCopyArrayShape`, () => {
+    expect(deepCopyArrayShape([[1, 2, 3], 2, -1])).to.deep.equal([
+      [0, 0, 0],
+      0,
+      0,
+    ]);
+    expect(
+      deepCopyArrayShape([
+        [[1], 2, 3],
+        [1, 2],
+        [3, [3]],
+      ]),
+    ).to.deep.equal([
+      [[0], 0, 0],
+      [0, 0],
+      [0, [0]],
+    ]);
   });
 });

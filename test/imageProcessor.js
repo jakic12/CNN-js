@@ -1,12 +1,10 @@
-const { imageToArray, arrayToImage } = require(`../imageProcessor`);
-const { deepNormalize, deepMap } = require(`../math`);
+const {imageToArray, arrayToImage} = require(`../imageProcessor`);
+const {deepNormalize, deepMap} = require(`../math`);
 
 describe("Image processor tests", () => {
   it(`Image processor test converts to array`, async () => {
     console.log(
-      deepNormalize(
-        await imageToArray(`test/testImage.jpg`, { x: 100, y: 100 })
-      )
+      deepNormalize(await imageToArray(`test/testImage.jpg`, {x: 100, y: 100})),
     );
   });
 
@@ -14,11 +12,11 @@ describe("Image processor tests", () => {
     await arrayToImage(
       deepMap(
         deepNormalize(
-          await imageToArray(`test/testImage.jpg`, { x: 100, y: 100, z: 1 })
+          await imageToArray(`test/testImage.jpg`, {x: 100, y: 100, z: 1}),
         ),
-        (e) => e * 255
+        e => e * 255,
       ),
-      `test/output.jpg`
+      `test/output.jpg`,
     );
   });
 });

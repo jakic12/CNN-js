@@ -1,9 +1,9 @@
-const { expect } = require(`chai`);
+const {expect} = require(`chai`);
 const {
   CNN,
   Layer,
   ActivationFunction,
-  NetworkArchitectures
+  NetworkArchitectures,
 } = require(`../cnn`);
 
 var mnist = require("mnist");
@@ -22,7 +22,7 @@ describe("Convolutional neural network", () => {
     expect(() => {
       new CNN([
         new Layer.INPUT(12, 12, 2),
-        new Layer.CONV(5, 5, 3, 10, 3, 2, 3)
+        new Layer.CONV(5, 5, 3, 10, 3, 2, 3),
       ]);
     }).not.to.throw();
 
@@ -37,7 +37,7 @@ describe("Convolutional neural network", () => {
     expect(() => {
       new CNN([
         new Layer.INPUT(12, 12, 2),
-        new Layer.CONV(5, 5, 3, 10, 3, 2, 1)
+        new Layer.CONV(5, 5, 3, 10, 3, 2, 1),
       ]);
     }).to.throw();
 
@@ -49,7 +49,7 @@ describe("Convolutional neural network", () => {
       new CNN([
         new Layer.INPUT(12, 12, 2),
         new Layer.FLATTEN(12, 12, 2),
-        new Layer.FC(10)
+        new Layer.FC(10),
       ]);
     }).not.to.throw();
 
@@ -58,9 +58,9 @@ describe("Convolutional neural network", () => {
         new Layer.INPUT(12, 12, 2),
         new Layer.CONV(6, 6, 4, 4, 4, 2, 1),
         new Layer.FLATTEN(5, 5, 4),
-        new Layer.FC(10)
+        new Layer.FC(10),
       ]).weights.length,
-      `weights array should be as long as shape`
+      `weights array should be as long as shape`,
     ).to.equal(4);
 
     expect(
@@ -68,8 +68,8 @@ describe("Convolutional neural network", () => {
         new Layer.INPUT(12, 12, 2),
         new Layer.CONV(6, 6, 4, 4, 4, 2, 1),
         new Layer.FLATTEN(5, 5, 4),
-        new Layer.FC(10)
-      ]).weights[1].length
+        new Layer.FC(10),
+      ]).weights[1].length,
     ).to.equal(4);
 
     expect(
@@ -77,9 +77,9 @@ describe("Convolutional neural network", () => {
         new Layer.INPUT(12, 12, 2),
         new Layer.CONV(6, 6, 4, 4, 4, 2, 1),
         new Layer.FLATTEN(5, 5, 4),
-        new Layer.FC(10)
+        new Layer.FC(10),
       ]).weights[1][0].length,
-      `filter should be as deep as the previous layer`
+      `filter should be as deep as the previous layer`,
     ).to.equal(2);
 
     expect(
@@ -87,9 +87,9 @@ describe("Convolutional neural network", () => {
         new Layer.INPUT(12, 12, 2),
         new Layer.CONV(6, 6, 4, 4, 4, 2, 1),
         new Layer.FLATTEN(5, 5, 4),
-        new Layer.FC(10)
+        new Layer.FC(10),
       ]).weights[1][0][0].length,
-      `filter width should be the same as filter size`
+      `filter width should be the same as filter size`,
     ).to.equal(4);
 
     expect(
@@ -97,9 +97,9 @@ describe("Convolutional neural network", () => {
         new Layer.INPUT(12, 12, 2),
         new Layer.CONV(6, 6, 4, 4, 4, 2, 1),
         new Layer.FLATTEN(5, 5, 4),
-        new Layer.FC(10)
+        new Layer.FC(10),
       ]).weights[3].length,
-      `fc weight height should be the same as previous layer length`
+      `fc weight height should be the same as previous layer length`,
     ).to.equal(5 * 5 * 4);
 
     expect(
@@ -107,13 +107,13 @@ describe("Convolutional neural network", () => {
         new Layer.INPUT(12, 12, 2),
         new Layer.CONV(6, 6, 4, 4, 4, 2, 1),
         new Layer.FLATTEN(5, 5, 4),
-        new Layer.FC(10)
+        new Layer.FC(10),
       ]).weights[3][0].length,
-      `fc weight width should be the same as next layer length`
+      `fc weight width should be the same as next layer length`,
     ).to.equal(10);
   });
 
-  it(`error reduces`, function() {
+  it(`error reduces`, function () {
     this.timeout(0);
     let cnn = new CNN(NetworkArchitectures.LeNet5);
 
@@ -125,8 +125,8 @@ describe("Convolutional neural network", () => {
           } else {
             return 0;
           }
-        })
-      )
+        }),
+      ),
     ];
 
     expect(() => {
@@ -158,7 +158,7 @@ describe("Convolutional neural network", () => {
       }*/
       let err = cnn.getError(trainingSet[0].output);
       errArr.push(err);
-      cnn.backpropagate(trainingSet[0].output);
+      cnn.backpropagate(trainingSet[0].output, true);
     }
     errArr.map((t, i) => {
       if (i > 0) {
