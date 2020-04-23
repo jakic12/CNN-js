@@ -39,7 +39,8 @@ class CNN {
   constructor(shape) {
     if (shape.shape) {
       CNN.confirmShape(shape.shape);
-      this.shape = CNN.applyActivationFunctionToShape(shape.shape);
+      this.initialShape = shape.initialShape.map(s => Object.assign({}, s));
+      this.shape = CNN.applyActivationFunctionToShape(shape.initialShape);
 
       this.errorF = (expected, actual) => Math.pow(actual - expected, 2) / 2;
       this.dErrorF = (expected, actual) => actual - expected;
@@ -52,6 +53,7 @@ class CNN {
       this.biases = shape.biases;
     } else {
       CNN.confirmShape(shape);
+      this.initialShape = shape.map(s => Object.assign({}, s));
       this.shape = CNN.applyActivationFunctionToShape(shape);
 
       const xavier = (fan_in, fan_out) =>
@@ -140,12 +142,6 @@ class CNN {
             daf: ActivationFunctions[s.af].derivative,
           })
         : s,
-    );
-  }
-
-  serialize() {
-    return JSON.stringify(
-      Object.assign({}, this, {shape: this.shape.map(s => {})}),
     );
   }
 

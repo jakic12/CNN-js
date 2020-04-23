@@ -6,6 +6,8 @@ const {
   NetworkArchitectures,
 } = require(`../cnn`);
 
+const {deepMap} = require("../math");
+
 var mnist = require("mnist");
 
 var set = mnist.set(10, 10);
@@ -16,6 +18,12 @@ var testSet = set.test;
 describe("Convolutional neural network", () => {
   it(`LeNet5 doesn't throw error`, () => {
     expect(() => new CNN(NetworkArchitectures.LeNet5)).not.to.throw();
+  });
+
+  it(`CNN serialization`, () => {
+    const cn = new CNN(NetworkArchitectures.LeNet5);
+    const newCn = new CNN(JSON.parse(JSON.stringify(cn)));
+    expect(JSON.stringify(newCn)).to.equal(JSON.stringify(cn));
   });
 
   it(`confirmShape`, () => {
