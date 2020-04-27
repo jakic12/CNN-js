@@ -15,6 +15,11 @@ describe("Dataset processor tests", () => {
     const arr = new Uint8Array(new Array(100).fill(255));
     expect(stringToUint8Array(uint8ArrayToString(arr))).to.deep.equal(arr);
   });
+
+  it(`Converts big datasets to string`, function () {
+    const arr = new Uint8Array(new Array(1000000).fill(255));
+    expect(() => uint8ArrayToString(arr)).to.not.throw();
+  });
   it(`Converts to array without errors`, function () {
     this.timeout(0);
     const buffer = fs.readFileSync(`test/data_batch_1.bin`);

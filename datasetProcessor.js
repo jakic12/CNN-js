@@ -1,4 +1,4 @@
-const { vectorize, deepNormalize } = require(`./math`);
+const {vectorize, deepNormalize} = require(`./math`);
 
 const openDatasetFromBuffer = (buffer, imageColorDepth = 3, imageSize = 32) => {
   const datasetArray = new Uint8Array(buffer);
@@ -40,7 +40,14 @@ const vectorizeDatasetLabels = (dataset, outLength) => {
 };
 
 const uint8ArrayToString = buf => {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
+  const arr = new Uint8Array(buf);
+  if (arr.length > 60000) {
+    let outStr = "";
+    for (let i = 0; i <= arr.length - 1; i += 60000) {
+      outStr += String.fromCharCode.apply(null, arr.subarray(i, i + 60000));
+    }
+    return outStr;
+  } else return String.fromCharCode.apply(null, arr);
 };
 
 const stringToUint8Array = str => {
