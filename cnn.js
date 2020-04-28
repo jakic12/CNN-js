@@ -136,10 +136,10 @@ class CNN {
 
   static applyActivationFunctionToShape(shape) {
     return shape.map(s =>
-      s.af
+      s.afName
         ? Object.assign(s, {
-            af: ActivationFunctions[s.af].norm,
-            daf: ActivationFunctions[s.af].derivative,
+            af: ActivationFunctions[s.afName].norm,
+            daf: ActivationFunctions[s.afName].derivative,
           })
         : s,
     );
@@ -576,9 +576,9 @@ const Layer = {
    * @param {Number} k number of filters
    * @param {Number} s stride
    * @param {Number} p zero padding
-   * @param {function(Number):Number} af activation function
+   * @param {function(Number):Number} afName activation function name
    */
-  CONV: function (w, h, d, f, k, s, p, af) {
+  CONV: function (w, h, d, f, k, s, p, afName) {
     this.type = LayerType.CONV;
     this.w = w;
     this.h = h;
@@ -587,7 +587,7 @@ const Layer = {
     this.k = k;
     this.s = s;
     this.p = p;
-    this.af = af;
+    this.afName = afName;
   },
   /**
    * Pooling layer hyperparameters
@@ -596,26 +596,26 @@ const Layer = {
    * @param {Number} d depth of the output
    * @param {Number} f filter size
    * @param {Number} s stride
-   * @param {function(Number):Number} af activation function
+   * @param {function(Number):Number} afName activation function
    */
-  POOL: function (w, h, d, f, s, af) {
+  POOL: function (w, h, d, f, s, afName) {
     this.type = LayerType.POOL;
     this.w = w;
     this.h = h;
     this.d = d;
     this.f = f;
     this.s = s;
-    this.af = af;
+    this.afName = afName;
   },
   /**
    * A fully connected layer
    * @param {Number} l length of the layer
-   * @param {function(Number):Number} af activation function
+   * @param {function(Number):Number} afName activation function name
    */
-  FC: function (l, af) {
+  FC: function (l, afName) {
     this.type = LayerType.FC;
     this.l = l;
-    this.af = af;
+    this.afName = afName;
   },
   /**
    * Convert a convolutional layerr to a fully connected layer
