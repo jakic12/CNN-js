@@ -121,9 +121,11 @@ describe("Convolutional neural network", () => {
     ).to.equal(10);
   });
 
-  it(`error reduces`, function () {
+  it(`error reduces after serialization`, function () {
     this.timeout(0);
-    let cnn = new CNN(NetworkArchitectures.LeNet5);
+    let cnn = new CNN(
+      JSON.parse(JSON.stringify(new CNN(NetworkArchitectures.LeNet5))),
+    );
 
     let input = [
       new Array(32).fill(0).map((_, i) =>

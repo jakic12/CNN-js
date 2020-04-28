@@ -2,7 +2,7 @@
   "name": "cnn",
   "version": "1.0.0",
   "description": "javascript convolutional neural network library",
-  "main": "index.js",
+  "private": true,
   "directories": {
     "test": "tests"
   },
@@ -15,7 +15,9 @@
     "nyc": "^14.1.1"
   },
   "devDependencies": {
-    "chai": "^4.2.0"
+    "chai": "^4.2.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   },
   "scripts": {
     "test": "mocha",
