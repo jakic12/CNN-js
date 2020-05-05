@@ -10,10 +10,25 @@ const {deepMap} = require("../math");
 
 var mnist = require("mnist");
 
-var set = mnist.set(10, 10);
+var set = mnist.set(100, 10);
 
 var trainingSet = set.training;
 var testSet = set.test;
+
+let trainingDataset = trainingSet.map(k => ({
+  input: [
+    new Array(32).fill(0).map((_, i) =>
+      new Array(32).fill(0).map((_, j) => {
+        if (i < 28 && j < 28) {
+          return k.input[i * 28 + j];
+        } else {
+          return 0;
+        }
+      }),
+    ),
+  ],
+  output: k.output,
+}));
 
 describe("Convolutional neural network", () => {
   it(`LeNet5 doesn't throw error`, () => {
@@ -175,5 +190,22 @@ describe("Convolutional neural network", () => {
         expect(errArr[i - 1]).to.be.above(t);
       }
     });
+  });
+
+  it(`generates confusion matrix without error`, () => {
+    const cm = new CNN(NetworkArchitectures.LeNet5).confusionMatrix(
+      trainingDataset,
+    );
+    const stats = CNN.confusionMatrixStats(cm);
+
+    console.log(cm, stats);
+
+    console.log(
+      CNN.confusionMatrixStats([
+        [4, 1, 1],
+        [6, 2, 2],
+        [3, 0, 6],
+      ]),
+    );
   });
 });

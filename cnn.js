@@ -15,6 +15,7 @@ var {
   backPropagateCorrelation,
   update2Dmatrix,
   maxIndex,
+  sum,
 } = require("./math");
 
 const sigm = x => 1 / (1 + Math.exp(-x));
@@ -181,6 +182,46 @@ class CNN {
     }
 
     if (onEnd) onEnd();
+  }
+
+  confusionMatrix(dataset) {
+    const classCount = this.layers[this.layers.length - 1].length;
+    const out = new Array(classCount)
+      .fill(0)
+      .map(() => new Array(classCount).fill(0));
+    for (let i = 0; i < dataset.length; i++) {
+      const netOut = this.forwardPropagate(dataset[i].input);
+      if (dataset[i].output.length)
+        out[maxIndex(dataset[i].output)][maxIndex(netOut)]++;
+      else out[dataset[i].output][maxIndex(netOut)]++;
+    }
+    return out;
+  }
+
+  static confusionMatrixStats(cm) {
+    const classCount = cm.length;
+    const stats = {actual: []};
+    const avgSum = {precision: 0, recall: 0, f1Score: 0};
+    for (let i = 0; i < classCount; i++) {
+      const precision = cm[i][i] / sum(cm.map(k => k[i]));
+      const recall = cm[i][i] / sum(cm[i]);
+      stats.actual[i] = {
+        precision,
+        recall,
+        f1Score: (2 * (precision * recall)) / (precision + recall),
+      };
+      avgSum.precision += stats.actual[i].precision;
+      avgSum.recall += stats.actual[i].recall;
+      avgSum.f1Score += stats.actual[i].f1Score;
+    }
+
+    stats.avg = {
+      precision: avgSum.precision / classCount,
+      recall: avgSum.recall / classCount,
+      f1Score: avgSum.f1Score / classCount,
+    };
+
+    return stats;
   }
 
   /**
