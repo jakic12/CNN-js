@@ -696,6 +696,16 @@ const NetworkArchitectures = {
     new Layer.FC(84, ActivationFunction.TANH),
     new Layer.FC(10, ActivationFunction.TANH),
   ],
+  CustomReducedLeNet5Color: [
+    new Layer.INPUT(32, 32, 3),
+    new Layer.CONV(28, 28, 6, 5, 6, 1, 0, ActivationFunction.TANH),
+    new Layer.POOL(14, 14, 6, 2, 2, ActivationFunction.TANH),
+    new Layer.CONV(10, 10, 16, 5, 16, 1, 0, ActivationFunction.TANH),
+    new Layer.POOL(5, 5, 16, 2, 2, ActivationFunction.TANH),
+    new Layer.CONV(1, 1, 120, 5, 120, 1, 0, ActivationFunction.TANH),
+    new Layer.FLATTEN(1, 1, 120),
+    new Layer.FC(10, ActivationFunction.TANH),
+  ],
 };
 
 module.exports = {
