@@ -102,9 +102,6 @@ const resizeImage = (image, sizeDim) => {
       );
     } else {
       return resizeImage(image, Object.assign({}, sizeDim, {z: undefined}));
-        image.greyscale(),
-        Object.assign({}, sizeDim, {z: undefined}),
-      );
     }
   } else {
     return image.resize(sizeDim.x, sizeDim.y);
