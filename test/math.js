@@ -741,8 +741,11 @@ describe("Basic math functions", () => {
   });
 
   it(`softmax`, () => {
-    expect(softmax([1, 1, 1])).to.eql([1 / 3, 1 / 3, 1 / 3]);
-    expect(sum(softmax([1, 3, 4, 2, 1, 4]))).to.eql(1);
+    const delta = 0.000001;
+    const deepCloseTo = (a, b) =>
+      a.forEach((k, i) => expect(k).to.be.closeTo(b[i], delta));
+    deepCloseTo(softmax([1, 1, 1]), [1 / 3, 1 / 3, 1 / 3]);
+    expect(sum(softmax([1, 3, 4, 2, 1, 4]))).to.be.closeTo(1, delta);
     expect(
       Math.round(
         sum(
@@ -753,7 +756,7 @@ describe("Basic math functions", () => {
           ),
         ) * 1000,
       ) / 1000,
-    ).to.eql(1);
+    ).to.be.closeTo(1, delta);
   });
 
   it(`maxIndex`, () => {

@@ -264,8 +264,9 @@ const sum = a => {
 };
 
 const softmax = a => {
-  const sum1 = sum(a);
-  return deepMap(a, x => x / sum1);
+  const exp = deepMap(a, x => Math.exp(x));
+  const sum1 = sum(exp);
+  return deepMap(exp, x => x / sum1);
 };
 
 const maxIndex = a => {
