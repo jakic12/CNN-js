@@ -52,6 +52,7 @@ class CNN {
       this.dlayers = shape.dlayers;
       this.weights = shape.weights;
       this.biases = shape.biases;
+      this.serializeParams = shape.serializeParams;
       if (shape.serializeParams) {
         shape.serializeParams.forEach(p => {
           this[p] = shape[p];
