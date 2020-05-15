@@ -208,6 +208,8 @@ class CNN {
     const classCount = cm.length;
     const stats = {actual: []};
     const avgSum = {precision: 0, recall: 0, f1Score: 0};
+    const nanCount = {precision: 0, recall: 0, f1Score: 0};
+
     for (let i = 0; i < classCount; i++) {
       const precision = cm[i][i] / sum(cm.map(k => k[i]));
       const recall = cm[i][i] / sum(cm[i]);
@@ -216,15 +218,23 @@ class CNN {
         recall,
         f1Score: (2 * (precision * recall)) / (precision + recall),
       };
-      avgSum.precision += stats.actual[i].precision;
-      avgSum.recall += stats.actual[i].recall;
-      avgSum.f1Score += stats.actual[i].f1Score;
+      if (!isNaN(stats.actual[i].precision))
+        avgSum.precision += stats.actual[i].precision;
+      else nanCount.precision += 1;
+
+      if (!isNaN(stats.actual[i].recall))
+        avgSum.recall += stats.actual[i].recall;
+      else nanCount.recall += 1;
+
+      if (!isNaN(stats.actual[i].f1Score))
+        avgSum.f1Score += stats.actual[i].f1Score;
+      else nanCount.f1Score += 1;
     }
 
     stats.avg = {
-      precision: avgSum.precision / classCount,
-      recall: avgSum.recall / classCount,
-      f1Score: avgSum.f1Score / classCount,
+      precision: avgSum.precision / (classCount - nanCount.precision),
+      recall: avgSum.recall / (classCount - nanCount.recall),
+      f1Score: avgSum.f1Score / (classCount - nanCount.f1Score),
     };
 
     return stats;
