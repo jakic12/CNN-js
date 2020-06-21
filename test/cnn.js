@@ -208,4 +208,13 @@ describe("Convolutional neural network", () => {
       ]),
     );
   });
+
+  it(`deserializes custom parameter`, () => {
+    const cm = new CNN(NetworkArchitectures.LeNet5);
+    cm.test = "1as";
+    cm.serializeParams = ["test"];
+    const serialized = JSON.parse(JSON.stringify(cm));
+    const h = new CNN(serialized);
+    expect(h.test).to.equal("1as");
+  });
 });

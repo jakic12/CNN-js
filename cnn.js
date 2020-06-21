@@ -207,7 +207,7 @@ class CNN {
   static confusionMatrixStats(cm) {
     const classCount = cm.length;
     const stats = {actual: []};
-    const avgSum = {precision: 0, recall: 0, f1Score: 0};
+    const avgSum = {precision: 0, recall: 0, f1Score: 0, accuracy: 0};
     for (let i = 0; i < classCount; i++) {
       const precision = cm[i][i] / sum(cm.map(k => k[i]));
       const recall = cm[i][i] / sum(cm[i]);
@@ -216,15 +216,16 @@ class CNN {
         recall,
         f1Score: (2 * (precision * recall)) / (precision + recall),
       };
-      avgSum.precision += stats.actual[i].precision;
-      avgSum.recall += stats.actual[i].recall;
-      avgSum.f1Score += stats.actual[i].f1Score;
+      Object.keys(avgSum).map(key => {
+        avgSum[key] += stats.actual[i][key];
+      });
     }
 
     stats.avg = {
       precision: avgSum.precision / classCount,
       recall: avgSum.recall / classCount,
       f1Score: avgSum.f1Score / classCount,
+      accuracy: sum(cm.map((k, i) => k[i])) / sum(cm),
     };
 
     return stats;
