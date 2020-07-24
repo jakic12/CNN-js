@@ -372,14 +372,16 @@ class CNN {
             deepMap(this.layers[i], v => this.shape[i].daf(v)),
           );
 
-        if (updateWeights)
-          for (let y = 0; y < this.weights[i].length; y++)
+        if (updateWeights) {
+          for (let y = 0; y < this.weights[i].length; y++) {
             for (let x = 0; x < this.weights[i][y].length; x++) {
               this.weights[i][y][x] +=
                 this.layers[i - 1][y] * this.dlayers[i][x] * this.learningRate;
-            }
 
-        //TODO backpropagate for bias
+              this.biases[i + 1][x] += this.dlayers[i][x] * this.learningRate;
+            }
+          }
+        }
       } else if (this.shape[i].type == LayerType.FLATTEN) {
         let darray;
         if (i == this.shape.length - 1) {
@@ -524,6 +526,31 @@ class CNN {
       }
     }
   }
+
+  /* experimental */
+
+  refineImageToBe(input, expOut, iter, lr = this.learningRate) {
+    console.log(expOut);
+    this.forwardPropagate(input);
+    for (let i = 0; i < iter; i++) {
+      this.forwardPropagate(this.layers[0]);
+      this.backpropagate(expOut, false);
+      this.layers[0] = this.layers[0].map((_data, z) =>
+        update2Dmatrix(this.layers[0][z], this.dlayers[0][z], lr),
+      );
+      if (i % 100 == 0)
+        console.log(
+          i,
+          `\n`,
+          this.getError(expOut),
+          `\n`,
+          this.layers[this.layers.length - 1],
+        );
+    }
+    return this.layers[0];
+  }
+
+  /* experimental */
 
   static confirmShape(shape) {
     if (shape[0].type != LayerType.INPUT)
