@@ -11,7 +11,7 @@
     "gpu.js": "^2.0.0-rc.21",
     "jimp": "^0.10.0",
     "mnist": "^1.1.0",
-    "mocha": "^6.2.0",
+    "mocha": "^10.2.0",
     "nyc": "^14.1.1"
   },
   "devDependencies": {
